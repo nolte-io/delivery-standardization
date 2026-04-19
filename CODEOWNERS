@@ -1,0 +1,20 @@
+# Default ownership
+*                           @nolte-io/founders
+
+# Standards are authoritative — changes require Jeffrey review
+/standards/                 @jeffreynolte
+/standards/six-yes.md       @jeffreynolte
+/standards/rubric.md        @jeffreynolte
+/standards/system-rules.md  @jeffreynolte
+
+# Judge prompts affect grader outputs — changes require Jeffrey review
+/prompts/                   @jeffreynolte
+
+# Grader implementation — engineering owns, reviews with Jeffrey
+/grader/                    @nolte-io/engineering @jeffreynolte
+
+# Rollout docs — product owns
+/rollout/                   @yannalopes @jeffreynolte
+
+# Specs — Jeffrey + engineering
+/specs/                     @jeffreynolte @nolte-io/engineering
