@@ -156,12 +156,22 @@ class Grader:
             "grade_by_window requires the Jira adapter from commit 2."
         )
 
-    def rollup(self, grades: list[IssueGrade]) -> RollupReport:
-        """Aggregate per-issue grades into a run-level report.
-
-        Wired in: commit 10 (aggregator + rollup).
-        """
-        raise NotImplementedError("rollup is wired in commit 10.")
+    def rollup(
+        self,
+        grades: list[IssueGrade],
+        *,
+        run_id: str | None = None,
+        window: "RollupWindow | None" = None,
+    ) -> RollupReport:
+        """Aggregate per-issue grades into a run-level report."""
+        from nolte_grader.core.aggregator import aggregate
+        from nolte_grader.core.models import RollupWindow as _RollupWindow  # noqa: F401
+        return aggregate(
+            grades,
+            run_id=run_id,
+            window=window,
+            cycle_time_threshold_days=self._config.thresholds.cycle_time_days,
+        )
 
     # ------------------------------------------------------------------
     # Internal pipeline

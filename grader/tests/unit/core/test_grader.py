@@ -63,8 +63,8 @@ class TestPublicAPIContractExists:
                 project_keys=["TEST"],
             )
 
-    def test_rollup_raises_not_implemented_until_wired(self, grader: Grader) -> None:
-        with pytest.raises(NotImplementedError):
+    def test_rollup_raises_on_empty_grades(self, grader: Grader) -> None:
+        with pytest.raises(ValueError, match="Cannot aggregate zero grades"):
             grader.rollup([])
 
     def test_grade_issues_empty_list_returns_empty(self, grader: Grader) -> None:

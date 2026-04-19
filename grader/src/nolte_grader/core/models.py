@@ -126,6 +126,12 @@ class SystemView(BaseModel):
     top_failing_dimensions: list[str]
     classification_corrections: ClassificationCorrections
     repeat_offenders_by_epic: list[str] = Field(default_factory=list)
+    cycle_time_p50: float | None = None
+    cycle_time_p90: float | None = None
+    cycle_time_max: float | None = None
+    cycle_time_stories_above_threshold: int = 0
+    cycle_time_threshold_days: int = 7
+    pending_judge_dimensions: int = 0
 
 
 class OwnerView(BaseModel):
