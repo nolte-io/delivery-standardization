@@ -10,6 +10,7 @@ Stable SCREAMING_SNAKE_CASE strings returned by the grader with every dimension 
 | `FIELD_EMPTY` | A required custom field is empty. |
 | `EVIDENCE_INSUFFICIENT_TO_JUDGE` | Judge returned INSUFFICIENT_EVIDENCE. |
 | `TEAM_SIZE_EXCEPTION` | Single-person team; dimension skipped or flagged rather than failed. |
+| `NOT_APPLICABLE` | Dimension genuinely does not apply to this issue (e.g., downstream dimensions for a Story that never entered In Implementation). Excluded from fail-rate denominators. Rollup surfaces NA counts alongside pass/fail — never silent. |
 
 ## Y1 — Business objective nameable
 
@@ -96,8 +97,9 @@ Stable SCREAMING_SNAKE_CASE strings returned by the grader with every dimension 
 | Code | Verdict |
 |---|---|
 | `IMPACT_LINK_PRESENT_AND_RESOLVABLE` | PASS |
+| `IMPACT_LINK_UNREACHABLE` | PASS (flagged) — link is present but HTTP check timed out or returned a transient error; not a confirmed break. |
 | `IMPACT_LINK_MISSING` | FAIL |
-| `IMPACT_LINK_BROKEN` | FAIL |
+| `IMPACT_LINK_BROKEN` | FAIL — link resolved to an HTTP 4xx or 5xx response. |
 
 ## U11 — Issue-type classification
 
