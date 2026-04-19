@@ -191,13 +191,13 @@ def eval_u7(
         to_secs = extract_sections(edit.to_value)
         checks = (
             ("acceptance_criteria", "AC_EDITED_POST_COMMIT"),
-            ("bdd_scenarios", "SCENARIOS_EDITED_POST_COMMIT"),
+            ("scenarios", "SCENARIOS_EDITED_POST_COMMIT"),
         )
         for key, evidence_code in checks:
             before = (from_secs.get(key) or "").strip()  # type: ignore[literal-required]
             after = (to_secs.get(key) or "").strip()  # type: ignore[literal-required]
             if before != after:
-                label = "Acceptance Criteria" if key == "acceptance_criteria" else "BDD Scenarios"
+                label = "Acceptance Criteria" if key == "acceptance_criteria" else "Scenarios"
                 return _r("U7", Verdict.FAIL, evidence_code,
                           f"{label} section changed after commitment.")
     return _r("U7", Verdict.PASS, "NO_POST_COMMIT_AC_EDITS",

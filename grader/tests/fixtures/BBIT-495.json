@@ -1,0 +1,179 @@
+{
+  "key": "BBIT-495",
+  "fields": {
+    "issuetype": {"name": "Story"},
+    "project": {"key": "BBIT", "name": "Bright Bits"},
+    "summary": "Add header CTA button for activation flow",
+    "status": {"name": "Done"},
+    "assignee": {"accountId": "dulce-id", "displayName": "Dulce Hernandez Cruz"},
+    "reporter": {"accountId": "yanna-id", "displayName": "Yanna Lopes"},
+    "created": "2026-03-08T09:00:00.000+0000",
+    "resolutiondate": "2026-03-22T16:00:00.000+0000",
+    "parent": {"key": "BBIT-100", "fields": {"issuetype": {"name": "Epic"}}},
+    "description": {
+      "version": 1,
+      "type": "doc",
+      "content": [
+        {
+          "type": "heading",
+          "attrs": {"level": 2},
+          "content": [{"type": "text", "text": "Business Objective"}]
+        },
+        {
+          "type": "paragraph",
+          "content": [{"type": "text", "text": "Drive activation rate by 10% within Q2 by surfacing the upgrade CTA earlier in the user journey."}]
+        },
+        {
+          "type": "heading",
+          "attrs": {"level": 2},
+          "content": [{"type": "text", "text": "Observable Impact"}]
+        },
+        {
+          "type": "paragraph",
+          "content": [{"type": "text", "text": "Activation rate (first meaningful action within 7 days of signup) increases by 10%. Measured in Amplitude dashboard \u2018Onboarding Funnel\u2019 within 30 days of shipping."}]
+        },
+        {
+          "type": "heading",
+          "attrs": {"level": 2},
+          "content": [{"type": "text", "text": "Acceptance Criteria"}]
+        },
+        {
+          "type": "paragraph",
+          "content": [{"type": "text", "text": "- CTA button appears in header for users who have not completed activation\n- Button label reads \u201cGet started\u201d\n- Clicking button navigates to /onboarding\n- Button is hidden for users with activation_completed = true\n- Accessible: keyboard-focusable, meets AA contrast"}]
+        },
+        {
+          "type": "heading",
+          "attrs": {"level": 2},
+          "content": [{"type": "text", "text": "Scenarios"}]
+        },
+        {
+          "type": "paragraph",
+          "content": [{"type": "text", "text": "Given a logged-in user without activation_completed\nWhen they view any authenticated page\nThen the CTA button appears in the header\n\nGiven a logged-in user with activation_completed = true\nWhen they view any authenticated page\nThen no CTA button is visible in the header"}]
+        },
+        {
+          "type": "heading",
+          "attrs": {"level": 2},
+          "content": [{"type": "text", "text": "Risks"}]
+        },
+        {
+          "type": "paragraph",
+          "content": [{"type": "text", "text": "Feature flag dependency: if flag service is unavailable, button defaults to hidden (safe fail). Confirm with ops before deploy."}]
+        }
+      ]
+    },
+    "subtasks": [
+      {"key": "BBIT-496", "fields": {"summary": "Implement header CTA button", "issuetype": {"name": "Sub-task"}}},
+      {"key": "BBIT-497", "fields": {"summary": "Tests \u2014 BBIT-495", "issuetype": {"name": "Sub-task"}}}
+    ],
+    "issueLinks": [],
+    "customfield_10100": "https://prod.brightbits.io/releases/v2.14.0",
+    "customfield_10101": "https://analytics.brightbits.io/dashboard/activation-funnel",
+    "customfield_10102": null,
+    "comment": {"comments": []}
+  },
+  "renderedFields": {
+    "description": "<h2>Business Objective</h2><p>Drive activation rate by 10%.</p><h2>Observable Impact</h2><p>Activation rate increases by 10%.</p><h2>Acceptance Criteria</h2><p>- CTA button appears in header</p><h2>Scenarios</h2><p>Given a logged-in user...</p><h2>Risks</h2><p>Feature flag dependency.</p>"
+  },
+  "changelog": {
+    "histories": [
+      {
+        "id": "h01",
+        "author": {"accountId": "yanna-id", "displayName": "Yanna Lopes"},
+        "created": "2026-03-08T09:00:00.000+0000",
+        "items": [{"field": "status", "fieldtype": "jira", "fromString": "Backlog", "toString": "In Specification"}]
+      },
+      {
+        "id": "h02",
+        "author": {"accountId": "yanna-id", "displayName": "Yanna Lopes"},
+        "created": "2026-03-10T14:00:00.000+0000",
+        "items": [{"field": "description", "fieldtype": "jira", "fromString": null, "toString": "## Business Objective\nDrive activation.\n\n## Observable Impact\nActivation +10%.\n\n## Acceptance Criteria\n- CTA appears in header\n\n## Scenarios\nGiven a user\nWhen they view a page\nThen CTA is visible\n\n## Risks\nFeature flag dependency."}]
+      },
+      {
+        "id": "h03",
+        "author": {"accountId": "yanna-id", "displayName": "Yanna Lopes"},
+        "created": "2026-03-12T10:00:00.000+0000",
+        "items": [{"field": "status", "fieldtype": "jira", "fromString": "In Specification", "toString": "Done Specifying"}]
+      },
+      {
+        "id": "h04",
+        "author": {"accountId": "hector-id", "displayName": "Hector Sanchez"},
+        "created": "2026-03-13T11:00:00.000+0000",
+        "items": [
+          {"field": "status", "fieldtype": "jira", "fromString": "Done Specifying", "toString": "Ready"},
+          {"field": "Spec Approver", "fieldtype": "jira", "fromString": null, "toString": "hector-id"}
+        ]
+      },
+      {
+        "id": "h05",
+        "author": {"accountId": "hector-id", "displayName": "Hector Sanchez"},
+        "created": "2026-03-15T10:00:00.000+0000",
+        "items": [{"field": "status", "fieldtype": "jira", "fromString": "Ready", "toString": "In Implementation"}]
+      },
+      {
+        "id": "h06",
+        "author": {"accountId": "hector-id", "displayName": "Hector Sanchez"},
+        "created": "2026-03-20T14:00:00.000+0000",
+        "items": [
+          {"field": "status", "fieldtype": "jira", "fromString": "In Implementation", "toString": "Done Implementing"},
+          {"field": "customfield_10100", "fieldtype": "jira", "fromString": null, "toString": "https://prod.brightbits.io/releases/v2.14.0"}
+        ]
+      },
+      {
+        "id": "h07",
+        "author": {"accountId": "yanna-id", "displayName": "Yanna Lopes"},
+        "created": "2026-03-21T09:00:00.000+0000",
+        "items": [{"field": "status", "fieldtype": "jira", "fromString": "Done Implementing", "toString": "In Validation"}]
+      },
+      {
+        "id": "h08",
+        "author": {"accountId": "yanna-id", "displayName": "Yanna Lopes"},
+        "created": "2026-03-22T16:00:00.000+0000",
+        "items": [{"field": "status", "fieldtype": "jira", "fromString": "In Validation", "toString": "Done"}]
+      }
+    ]
+  },
+  "_subtasks_full": [
+    {
+      "key": "BBIT-496",
+      "fields": {
+        "summary": "Implement header CTA button",
+        "issuetype": {"name": "Sub-task"},
+        "status": {"name": "Done"},
+        "assignee": {"accountId": "dulce-id", "displayName": "Dulce Hernandez Cruz"},
+        "created": "2026-03-15T11:00:00.000+0000",
+        "description": null
+      },
+      "changelog": {
+        "histories": [
+          {
+            "id": "sh01",
+            "author": {"accountId": "dulce-id", "displayName": "Dulce Hernandez Cruz"},
+            "created": "2026-03-20T13:00:00.000+0000",
+            "items": [{"field": "status", "fieldtype": "jira", "fromString": "In Progress", "toString": "Done"}]
+          }
+        ]
+      }
+    },
+    {
+      "key": "BBIT-497",
+      "fields": {
+        "summary": "Tests \u2014 BBIT-495",
+        "issuetype": {"name": "Sub-task"},
+        "status": {"name": "Done"},
+        "assignee": {"accountId": "dulce-id", "displayName": "Dulce Hernandez Cruz"},
+        "created": "2026-03-15T11:30:00.000+0000",
+        "description": "All tests passing. CI run: https://github.com/brightbits/app/actions/runs/7891234"
+      },
+      "changelog": {
+        "histories": [
+          {
+            "id": "sh02",
+            "author": {"accountId": "dulce-id", "displayName": "Dulce Hernandez Cruz"},
+            "created": "2026-03-20T13:30:00.000+0000",
+            "items": [{"field": "status", "fieldtype": "jira", "fromString": "In Progress", "toString": "Done"}]
+          }
+        ]
+      }
+    }
+  ]
+}

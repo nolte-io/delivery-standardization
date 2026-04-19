@@ -229,8 +229,8 @@ class TestEvalU7:
 
     def test_edit_to_non_ac_section_passes(self) -> None:
         edit = _field_edit(
-            from_val="## Why\nOriginal.\n## What\nOld.\n",
-            to_val="## Why\nOriginal.\n## What\nNew.\n",
+            from_val="## Business Objective\nOriginal.\n## Observable Impact\nOld metric.\n",
+            to_val="## Business Objective\nOriginal.\n## Observable Impact\nNew metric.\n",
         )
         r = eval_u7([edit])
         assert r.verdict == Verdict.PASS
@@ -246,8 +246,8 @@ class TestEvalU7:
 
     def test_scenarios_changed_fails(self) -> None:
         edit = _field_edit(
-            from_val="## BDD Scenarios\nGiven X\nWhen Y\nThen Z\n",
-            to_val="## BDD Scenarios\nGiven X\nWhen Y\nThen Z2\n",
+            from_val="## Scenarios\nGiven X\nWhen Y\nThen Z\n",
+            to_val="## Scenarios\nGiven X\nWhen Y\nThen Z2\n",
         )
         r = eval_u7([edit])
         assert r.verdict == Verdict.FAIL
@@ -256,15 +256,23 @@ class TestEvalU7:
     def test_whitespace_only_ac_change_passes(self) -> None:
         edit = _field_edit(
             from_val="## Acceptance Criteria\nSame content\n",
-            to_val="## Acceptance Criteria\nSame content\n\n\n",
+            to_val="## Acceptance Criteria\nSame content\n\n\n",  # only whitespace diff
+        )
+        r = eval_u7([edit])
+        assert r.verdict == Verdict.PASS
+
+    def test_whitespace_only_scenarios_change_passes(self) -> None:
+        edit = _field_edit(
+            from_val="## Scenarios\nGiven X\n",
+            to_val="## Scenarios\nGiven X\n\n",
         )
         r = eval_u7([edit])
         assert r.verdict == Verdict.PASS
 
     def test_ac_added_where_none_existed_fails(self) -> None:
         edit = _field_edit(
-            from_val="## Why\nBecause.\n",
-            to_val="## Why\nBecause.\n## Acceptance Criteria\nNew AC.\n",
+            from_val="## Observable Impact\nMetric.\n",
+            to_val="## Observable Impact\nMetric.\n## Acceptance Criteria\nNew AC.\n",
         )
         r = eval_u7([edit])
         assert r.verdict == Verdict.FAIL

@@ -15,23 +15,24 @@ from nolte_grader.parsers.description import (
 # ---------------------------------------------------------------------------
 
 _FULL_TEMPLATE = """\
-## Why
-We need this because customers are frustrated.
+## Business Objective
+Drive activation by 10%.
 
-## What
-Build a button that does the thing.
+## Observable Impact
+MAU increases by 10% within 30 days; measured in Amplitude.
 
 ## Acceptance Criteria
-- It works
-- It is tested
+- Button renders in the header
+- Clicking button opens modal
+- Modal closes on Escape
 
-## BDD Scenarios
-Given a user
-When they click
-Then stuff happens
+## Scenarios
+Given a logged-in user
+When they click the header button
+Then the modal opens
 
-## Out of Scope
-Mobile support
+## Risks
+None identified
 """
 
 
@@ -43,61 +44,61 @@ Mobile support
 class TestExtractSections:
     def test_none_input_returns_all_none(self) -> None:
         s = extract_sections(None)
-        assert s["why"] is None
-        assert s["what"] is None
+        assert s["business_objective"] is None
+        assert s["observable_impact"] is None
         assert s["acceptance_criteria"] is None
-        assert s["bdd_scenarios"] is None
-        assert s["out_of_scope"] is None
+        assert s["scenarios"] is None
+        assert s["risks"] is None
 
     def test_empty_string_returns_all_none(self) -> None:
         s = extract_sections("")
-        for key in ("why", "what", "acceptance_criteria", "bdd_scenarios", "out_of_scope"):
+        for key in ("business_objective", "observable_impact", "acceptance_criteria", "scenarios", "risks"):
             assert s[key] is None
 
     def test_full_template_extracts_all_five(self) -> None:
         s = extract_sections(_FULL_TEMPLATE)
-        assert s["why"] is not None
-        assert s["what"] is not None
+        assert s["business_objective"] is not None
+        assert s["observable_impact"] is not None
         assert s["acceptance_criteria"] is not None
-        assert s["bdd_scenarios"] is not None
-        assert s["out_of_scope"] is not None
+        assert s["scenarios"] is not None
+        assert s["risks"] is not None
 
-    def test_why_content_correct(self) -> None:
+    def test_business_objective_content_correct(self) -> None:
         s = extract_sections(_FULL_TEMPLATE)
-        assert "customers are frustrated" in s["why"]  # type: ignore[operator]
+        assert "activation" in s["business_objective"]  # type: ignore[operator]
 
-    def test_what_content_correct(self) -> None:
+    def test_observable_impact_content_correct(self) -> None:
         s = extract_sections(_FULL_TEMPLATE)
-        assert "button" in s["what"]  # type: ignore[operator]
+        assert "Amplitude" in s["observable_impact"]  # type: ignore[operator]
 
     def test_acceptance_criteria_content_correct(self) -> None:
         s = extract_sections(_FULL_TEMPLATE)
-        assert "It works" in s["acceptance_criteria"]  # type: ignore[operator]
+        assert "Button renders" in s["acceptance_criteria"]  # type: ignore[operator]
 
-    def test_bdd_scenarios_content_correct(self) -> None:
+    def test_scenarios_content_correct(self) -> None:
         s = extract_sections(_FULL_TEMPLATE)
-        assert "Given a user" in s["bdd_scenarios"]  # type: ignore[operator]
+        assert "Given a logged-in user" in s["scenarios"]  # type: ignore[operator]
 
-    def test_out_of_scope_content_correct(self) -> None:
+    def test_risks_content_correct(self) -> None:
         s = extract_sections(_FULL_TEMPLATE)
-        assert "Mobile support" in s["out_of_scope"]  # type: ignore[operator]
+        assert "None identified" in s["risks"]  # type: ignore[operator]
 
     def test_preamble_collected(self) -> None:
-        text = "Some intro text before any heading.\n\n## Why\nBecause.\n"
+        text = "Some intro text before any heading.\n\n## Business Objective\nDrive revenue.\n"
         s = extract_sections(text)
         assert s["preamble"] == "Some intro text before any heading."
 
     def test_preamble_none_when_starts_with_heading(self) -> None:
-        text = "## Why\nBecause.\n"
+        text = "## Business Objective\nDrive revenue.\n"
         s = extract_sections(text)
         assert s["preamble"] is None
 
     def test_missing_section_returns_none(self) -> None:
-        text = "## Why\nBecause.\n## What\nThe thing.\n"
+        text = "## Business Objective\nDrive revenue.\n## Observable Impact\nMetric.\n"
         s = extract_sections(text)
         assert s["acceptance_criteria"] is None
-        assert s["bdd_scenarios"] is None
-        assert s["out_of_scope"] is None
+        assert s["scenarios"] is None
+        assert s["risks"] is None
 
 
 # ---------------------------------------------------------------------------
@@ -112,31 +113,31 @@ class TestHeadingAliases:
 
     def test_scenarios_alias(self) -> None:
         s = extract_sections("## Scenarios\nGiven...\n")
-        assert s["bdd_scenarios"] is not None
+        assert s["scenarios"] is not None
+
+    def test_bdd_scenarios_alias(self) -> None:
+        s = extract_sections("## BDD Scenarios\nGiven...\n")
+        assert s["scenarios"] is not None
 
     def test_bdd_alias(self) -> None:
         s = extract_sections("## BDD\nGiven...\n")
-        assert s["bdd_scenarios"] is not None
+        assert s["scenarios"] is not None
 
-    def test_out_of_scope_hyphenated(self) -> None:
-        s = extract_sections("## Out-of-Scope\nNothing here\n")
-        assert s["out_of_scope"] is not None
+    def test_case_insensitive_risks(self) -> None:
+        s = extract_sections("## RISKS\nSome risk\n")
+        assert s["risks"] is not None
 
-    def test_case_insensitive_why(self) -> None:
-        s = extract_sections("## WHY\nReason\n")
-        assert s["why"] is not None
+    def test_case_insensitive_acceptance_criteria(self) -> None:
+        s = extract_sections("## ACCEPTANCE CRITERIA\nMust work\n")
+        assert s["acceptance_criteria"] is not None
 
-    def test_case_insensitive_what(self) -> None:
-        s = extract_sections("## WHAT\nSpec\n")
-        assert s["what"] is not None
+    def test_business_objective_exact_match(self) -> None:
+        s = extract_sections("## Business Objective\nIncrease revenue.\n")
+        assert s["business_objective"] is not None
 
-    def test_why_with_trailing_words(self) -> None:
-        s = extract_sections("## Why we are doing this\nBecause.\n")
-        assert s["why"] is not None
-
-    def test_what_with_trailing_words(self) -> None:
-        s = extract_sections("## What we are building\nThe widget.\n")
-        assert s["what"] is not None
+    def test_observable_impact_exact_match(self) -> None:
+        s = extract_sections("## Observable Impact\nMAU +10%\n")
+        assert s["observable_impact"] is not None
 
 
 # ---------------------------------------------------------------------------
@@ -145,15 +146,20 @@ class TestHeadingAliases:
 
 
 class TestDuplicateHeaders:
-    def test_first_occurrence_wins(self) -> None:
-        text = "## Why\nFirst why.\n\n## Why\nSecond why.\n"
-        s = extract_sections(text)
-        assert s["why"] == "First why."
-
-    def test_duplicate_ac_first_wins(self) -> None:
+    def test_first_ac_wins(self) -> None:
         text = "## Acceptance Criteria\nFirst AC.\n\n## Acceptance Criteria\nSecond AC.\n"
         s = extract_sections(text)
         assert s["acceptance_criteria"] == "First AC."
+
+    def test_first_risks_wins(self) -> None:
+        text = "## Risks\nFirst risks.\n\n## Risks\nSecond risks.\n"
+        s = extract_sections(text)
+        assert s["risks"] == "First risks."
+
+    def test_alias_and_full_name_first_wins(self) -> None:
+        text = "## AC\nFirst.\n\n## Acceptance Criteria\nSecond.\n"
+        s = extract_sections(text)
+        assert s["acceptance_criteria"] == "First."
 
 
 # ---------------------------------------------------------------------------
@@ -163,45 +169,45 @@ class TestDuplicateHeaders:
 
 class TestEmptyAndPlaceholderSections:
     def test_empty_section_body_is_present(self) -> None:
-        text = "## Why\n\n## What\nSpec here.\n"
+        text = "## Risks\n\n## Acceptance Criteria\nAC here.\n"
         s = extract_sections(text)
-        assert section_present(s, "why") is True
-        assert s["why"] == ""
+        assert section_present(s, "risks") is True
+        assert s["risks"] == ""
 
     def test_none_identified_treated_as_present(self) -> None:
-        text = "## Out of Scope\nNone identified\n"
+        text = "## Risks\nNone identified\n"
         s = extract_sections(text)
-        assert section_present(s, "out_of_scope") is True
-        assert s["out_of_scope"] == "None identified"
+        assert section_present(s, "risks") is True
+        assert s["risks"] == "None identified"
 
     def test_section_has_content_empty_is_false(self) -> None:
-        text = "## Why\n\n"
+        text = "## Risks\n\n"
         s = extract_sections(text)
-        assert section_has_content(s, "why") is False
+        assert section_has_content(s, "risks") is False
 
     def test_section_has_content_none_identified_is_false(self) -> None:
-        text = "## Why\nnone identified\n"
+        text = "## Risks\nnone identified\n"
         s = extract_sections(text)
-        assert section_has_content(s, "why") is False
+        assert section_has_content(s, "risks") is False
 
     def test_section_has_content_none_is_false(self) -> None:
-        text = "## Why\nNone\n"
+        text = "## Risks\nNone\n"
         s = extract_sections(text)
-        assert section_has_content(s, "why") is False
+        assert section_has_content(s, "risks") is False
 
     def test_section_has_content_na_is_false(self) -> None:
-        text = "## Why\nN/A\n"
+        text = "## Risks\nN/A\n"
         s = extract_sections(text)
-        assert section_has_content(s, "why") is False
+        assert section_has_content(s, "risks") is False
 
     def test_section_has_content_with_real_text(self) -> None:
-        text = "## Why\nWe need this for compliance reasons.\n"
+        text = "## Risks\nAPI rate limit may cause issues under high load.\n"
         s = extract_sections(text)
-        assert section_has_content(s, "why") is True
+        assert section_has_content(s, "risks") is True
 
     def test_missing_section_has_content_is_false(self) -> None:
-        s = extract_sections("## Why\nBecause.\n")
-        assert section_has_content(s, "out_of_scope") is False
+        s = extract_sections("## Risks\nSome risk.\n")
+        assert section_has_content(s, "acceptance_criteria") is False
 
 
 # ---------------------------------------------------------------------------
@@ -211,16 +217,16 @@ class TestEmptyAndPlaceholderSections:
 
 class TestSectionPresent:
     def test_present_returns_true(self) -> None:
-        s = extract_sections("## Why\nBecause.\n")
-        assert section_present(s, "why") is True
+        s = extract_sections("## Risks\nSome risk.\n")
+        assert section_present(s, "risks") is True
 
     def test_missing_returns_false(self) -> None:
-        s = extract_sections("## Why\nBecause.\n")
-        assert section_present(s, "what") is False
+        s = extract_sections("## Risks\nSome risk.\n")
+        assert section_present(s, "acceptance_criteria") is False
 
     def test_empty_body_still_present(self) -> None:
-        s = extract_sections("## What\n\n## Why\nBecause.\n")
-        assert section_present(s, "what") is True
+        s = extract_sections("## Risks\n\n## Acceptance Criteria\nAC.\n")
+        assert section_present(s, "risks") is True
 
 
 # ---------------------------------------------------------------------------
@@ -230,14 +236,14 @@ class TestSectionPresent:
 
 class TestUnrecognizedHeadings:
     def test_unrecognized_heading_ignored(self) -> None:
-        text = "## Technical Notes\nSome notes.\n\n## Why\nBecause.\n"
+        text = "## Technical Notes\nSome notes.\n\n## Risks\nSome risk.\n"
         s = extract_sections(text)
-        assert s["why"] == "Because."
+        assert s["risks"] == "Some risk."
 
     def test_only_unrecognized_headings(self) -> None:
-        text = "## Notes\nSomething.\n## Background\nOther thing.\n"
+        text = "## Notes\nSomething.\n## Background\nOther.\n"
         s = extract_sections(text)
-        for key in ("why", "what", "acceptance_criteria", "bdd_scenarios", "out_of_scope"):
+        for key in ("business_objective", "observable_impact", "acceptance_criteria", "scenarios", "risks"):
             assert s[key] is None
 
 
@@ -247,9 +253,9 @@ class TestUnrecognizedHeadings:
 
 
 class TestRealWorldShapes:
-    def test_bdd_section_with_multiple_scenarios(self) -> None:
+    def test_scenarios_with_multiple_givens(self) -> None:
         text = (
-            "## BDD Scenarios\n"
+            "## Scenarios\n"
             "Given a logged-in user\n"
             "When they visit the dashboard\n"
             "Then they see their widgets\n\n"
@@ -258,30 +264,29 @@ class TestRealWorldShapes:
             "Then they are redirected\n"
         )
         s = extract_sections(text)
-        assert "Given a logged-in user" in s["bdd_scenarios"]  # type: ignore[operator]
-        assert "Given a guest" in s["bdd_scenarios"]  # type: ignore[operator]
+        assert "Given a logged-in user" in s["scenarios"]  # type: ignore[operator]
+        assert "Given a guest" in s["scenarios"]  # type: ignore[operator]
 
     def test_ac_with_table_text(self) -> None:
         text = (
             "## Acceptance Criteria\n"
             "| Condition | Expected |\n"
             "| Happy path | 200 OK |\n"
-            "| Bad input | 400 |\n"
         )
         s = extract_sections(text)
         assert "Condition" in s["acceptance_criteria"]  # type: ignore[operator]
 
     def test_full_template_from_adf_normalized(self) -> None:
         normalized = (
-            "## Why\n\nCustomers need it.\n\n"
-            "## What\n\nA feature.\n\n"
+            "## Business Objective\n\nIncrease activation by 10%.\n\n"
+            "## Observable Impact\n\nMAU +10% in 30 days.\n\n"
             "## Acceptance Criteria\n\n- Works\n\n"
-            "## BDD Scenarios\n\nGiven X\nWhen Y\nThen Z\n\n"
-            "## Out of Scope\n\nMobile.\n\n"
+            "## Scenarios\n\nGiven X\nWhen Y\nThen Z\n\n"
+            "## Risks\n\nNone identified\n\n"
         )
         s = extract_sections(normalized)
-        assert section_present(s, "why")
-        assert section_present(s, "what")
+        assert section_present(s, "business_objective")
+        assert section_present(s, "observable_impact")
         assert section_present(s, "acceptance_criteria")
-        assert section_present(s, "bdd_scenarios")
-        assert section_present(s, "out_of_scope")
+        assert section_present(s, "scenarios")
+        assert section_present(s, "risks")
