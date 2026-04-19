@@ -9,7 +9,6 @@ Stable SCREAMING_SNAKE_CASE strings returned by the grader with every dimension 
 | `MISSING_SECTION` | A required template section is absent from the issue description. |
 | `FIELD_EMPTY` | A required custom field is empty. |
 | `EVIDENCE_INSUFFICIENT_TO_JUDGE` | Judge returned INSUFFICIENT_EVIDENCE. |
-| `JUDGE_NOT_YET_IMPLEMENTED` | Dimension requires judge evaluation; judge runner not wired in this build. Treated as NOT_APPLICABLE in aggregation until the judge is enabled. |
 | `TEAM_SIZE_EXCEPTION` | Single-person team; dimension skipped or flagged rather than failed. |
 | `NOT_APPLICABLE` | Dimension genuinely does not apply to this issue (e.g., downstream dimensions for a Story that never entered In Implementation). Excluded from fail-rate denominators. Rollup surfaces NA counts alongside pass/fail — never silent. |
 
