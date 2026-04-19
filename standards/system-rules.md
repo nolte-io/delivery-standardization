@@ -20,6 +20,8 @@ Validation confirms agreed behavior. It does not redefine it. New ideas discover
 
 Work-in-progress limits are system constraints. No new work enters In Specification or In Implementation when limits are exceeded. Exceptions require Head of Product approval and are logged. Chronic violations trigger a system review.
 
+**Exception logging format (machine-readable):** Exceptions are logged as a comment by an authorized approver during the In Implementation window, containing the exact phrase `WIP exception:` followed by the justification. The grader (dimension D7) scans for this phrase when checking WIP compliance. Comments without this exact prefix are not recognized as logged exceptions.
+
 ## 5. Outcome Drift Triggers Re-Alignment
 
 If delivered work fails to impact the intended business objective, new work is paused, epic objectives are re-evaluated, sequencing is adjusted before further commitment. Delivery does not continue on autopilot.

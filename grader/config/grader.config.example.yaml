@@ -80,6 +80,16 @@ custom_fields:
   impact_measurement_link: "Impact Measurement Link"
   spec_approver: "Spec Approver"
 
+teams:
+  # Team size per project drives Y4 TEAM_SIZE_EXCEPTION.
+  # Source of truth: config, not sub-task assignee count.
+  # TEAM_SIZE_EXCEPTION fires when size == 1 for the project.
+  default:
+    size: 5
+  per_project: {}
+  # per_project:
+  #   TINY: { size: 1 }
+
 judge:
   model: "claude-sonnet-4-6"
   temperature: 0
