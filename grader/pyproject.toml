@@ -1,0 +1,61 @@
+[build-system]
+requires = ["hatchling>=1.27.0"]
+build-backend = "hatchling.build"
+
+[project]
+name = "nolte-grader"
+version = "0.1.0"
+description = "Objective, repeatable scoring for Nolte's delivery pipeline."
+readme = "README.md"
+requires-python = ">=3.12"
+license = { text = "MIT" }
+authors = [{ name = "Jeffrey Nolte" }]
+dependencies = [
+  "httpx==0.28.1",
+  "anthropic==0.42.0",
+  "pydantic==2.10.4",
+  "PyYAML==6.0.2",
+  "python-dateutil==2.9.0.post0",
+  "tenacity==9.0.0",
+  "click==8.1.8",
+  "structlog==24.4.0",
+]
+
+[project.optional-dependencies]
+dev = [
+  "pytest==8.3.4",
+  "pytest-cov==6.0.0",
+  "respx==0.22.0",
+  "syrupy==4.8.0",
+  "hypothesis==6.123.2",
+  "mypy==1.14.1",
+  "ruff==0.8.4",
+  "types-PyYAML==6.0.12.20241230",
+]
+
+# CLI entry point wires in commit 12. Intentionally absent here.
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/nolte_grader"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-ra --strict-markers --strict-config"
+pythonpath = ["src"]
+
+[tool.mypy]
+python_version = "3.12"
+strict = true
+warn_return_any = true
+files = ["src", "tests"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "N", "UP", "B", "SIM", "RUF"]
+ignore = ["E501"]  # line length enforced by formatter, not linter
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**/*.py" = ["B011"]  # assert False is acceptable in tests
