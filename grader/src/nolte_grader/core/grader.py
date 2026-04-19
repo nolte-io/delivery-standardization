@@ -66,7 +66,7 @@ _JUDGE_ONLY_DIMS = frozenset({"Y1", "Y2", "U9", "U11", "C2", "D2", "D3"})
 # Dimensions whose Y3 overall represents the deterministic gate only (Y3.a).
 # Y3.b (judge quality) is added when the judge runner is wired.
 _SIX_YES_CODES = ("Y1", "Y2", "Y3", "Y4", "Y5", "Y6")
-_UPSTREAM_CODES = ("Y1", "Y2", "Y3", "Y4", "Y5", "Y6", "U7", "U8", "U9", "U10", "U11", "U12")
+_UPSTREAM_CODES = ("Y1", "Y2", "Y3", "Y4", "Y5", "Y6", "U7", "U8", "U9", "U10", "U11", "U12", "C1", "C2", "C3")
 _COMMITMENT_CODES = ("C1", "C2", "C3")
 _DOWNSTREAM_CODES = ("D1", "D2", "D3", "D4", "D5", "D6", "D7", "D8", "D9", "D10")
 
@@ -203,12 +203,17 @@ class Grader:
             )
 
         # Description at commitment (spec §7.2 U7, §7.3 C2):
-        # No edit history → current description was always the description; never penalize.
+        # Only fall back to current description when NO changelog edits exist (the spec was
+        # written in-place and never touched). When edits exist, description_at() may return
+        # None if the story had no description before the first edit — that None is correct
+        # (the story was empty at commit) and must not be overridden with the current text.
         desc_at_commit: str | None = None
         if commit_ts is not None:
-            desc_at_commit = changelog.description_at(commit_ts)
-            if desc_at_commit is None:
-                desc_at_commit = description  # fallback: unchanged since spec was written
+            description_edits = changelog.field_edits_for("description")
+            if not description_edits:
+                desc_at_commit = description
+            else:
+                desc_at_commit = changelog.description_at(commit_ts)
 
         # Validator (actor who moved Story to Done)
         validator_id = changelog.actor_who_transitioned_to("Done")
@@ -346,6 +351,16 @@ class Grader:
             dims["D9"] = eval_d9(defect_count, done_implementing_ts)
         if "D10" in enabled:
             dims["D10"] = eval_d10(changelog)
+
+        # Emit judge-only dimensions as NOT_APPLICABLE placeholders until commit 7.
+        for _code in sorted(_JUDGE_ONLY_DIMS):
+            if _code in enabled and _code not in dims:
+                dims[_code] = DimensionResult(
+                    code=_code,
+                    verdict=Verdict.NOT_APPLICABLE,
+                    evidence_code="JUDGE_NOT_YET_IMPLEMENTED",
+                    rationale="Judge evaluation not wired in this build.",
+                )
 
         # Compute overalls
         six_yes_overall = _compute_overall(dims, _SIX_YES_CODES)
