@@ -1,5 +1,6 @@
 """Evaluators — deterministic grading functions for all D-typed dimensions."""
 from .commitment import eval_c1, eval_c3
+from .workflow import eval_w1
 from .downstream import (
     eval_d1,
     eval_d4,
@@ -32,6 +33,7 @@ __all__ = [
     "eval_u12",
     "eval_c1",
     "eval_c3",
+    "eval_w1",
     "eval_d1",
     "eval_d4",
     "eval_d5",

@@ -132,6 +132,7 @@ class SystemView(BaseModel):
     cycle_time_stories_above_threshold: int = 0
     cycle_time_threshold_days: int = 7
     pending_judge_dimensions: int = 0
+    spec_workflow_bypasses: list[str] = Field(default_factory=list)
 
 
 class OwnerView(BaseModel):

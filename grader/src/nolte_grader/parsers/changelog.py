@@ -115,6 +115,15 @@ class ParsedChangelog:
         """Alias for commitment_timestamp() — kept for API compatibility."""
         return self.commitment_timestamp()
 
+    def implementation_entry_timestamp(self) -> datetime | None:
+        """Time of first entry into the implementation status from any prior status.
+
+        Unlike commitment_timestamp(), this matches any transition *into*
+        the implementation status regardless of the from-status. Used by W1 to
+        detect issues that reached implementation without going through Done Specifying.
+        """
+        return self._first_entry_into(self.commit_to)
+
     def done_implementing_timestamp(self) -> datetime | None:
         """Time of the first transition into the configured done-implementing status."""
         return self._first_entry_into(self.done_implementing_status)

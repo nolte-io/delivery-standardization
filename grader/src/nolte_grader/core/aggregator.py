@@ -118,6 +118,12 @@ def _build_system_view(
         if dr.graded == 0 and dr.not_applicable > 0
     )
 
+    # Spec workflow bypasses: issues where W1=FAIL (reached impl without Done Specifying)
+    spec_workflow_bypasses = sorted(
+        g.issue_key for g in grades
+        if (w1 := g.dimensions.get("W1")) and w1.verdict == Verdict.FAIL
+    )
+
     # Cycle time stats
     cycle_times = [g.cycle_time_days for g in grades if g.cycle_time_days is not None]
     ct_p50 = round(_percentile(cycle_times, 50), 2) if cycle_times else None
@@ -142,6 +148,7 @@ def _build_system_view(
         cycle_time_stories_above_threshold=ct_above,
         cycle_time_threshold_days=cycle_time_threshold_days,
         pending_judge_dimensions=pending_judge_dimensions,
+        spec_workflow_bypasses=spec_workflow_bypasses,
     )
 
 

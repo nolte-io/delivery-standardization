@@ -27,6 +27,7 @@ from nolte_grader.core.models import (
 from nolte_grader.evaluators import (
     eval_c1,
     eval_c3,
+    eval_w1,
     eval_d1,
     eval_d4,
     eval_d5,
@@ -66,8 +67,9 @@ _JUDGE_ONLY_DIMS = frozenset({"Y1", "Y2", "U9", "U11", "C2", "D2", "D3"})
 # Dimensions whose Y3 overall represents the deterministic gate only (Y3.a).
 # Y3.b (judge quality) is added when the judge runner is wired.
 _SIX_YES_CODES = ("Y1", "Y2", "Y3", "Y4", "Y5", "Y6")
-_UPSTREAM_CODES = ("Y1", "Y2", "Y3", "Y4", "Y5", "Y6", "U7", "U8", "U9", "U10", "U11", "U12", "C1", "C2", "C3")
+_UPSTREAM_CODES = ("Y1", "Y2", "Y3", "Y4", "Y5", "Y6", "U7", "U8", "U9", "U10", "U11", "U12", "C1", "C2", "C3", "W1")
 _COMMITMENT_CODES = ("C1", "C2", "C3")
+_WORKFLOW_CODES = ("W1",)
 _DOWNSTREAM_CODES = ("D1", "D2", "D3", "D4", "D5", "D6", "D7", "D8", "D9", "D10")
 
 
@@ -213,6 +215,7 @@ class Grader:
 
         # Gate timestamps
         commit_ts = changelog.commitment_timestamp()
+        impl_entry_ts = changelog.implementation_entry_timestamp()
         done_implementing_ts = changelog.done_implementing_timestamp()
         done_ts = changelog.done_timestamp()
 
@@ -355,6 +358,8 @@ class Grader:
             dims["U12"] = eval_u12(sections.get("risks"))
         if "C1" in enabled:
             dims["C1"] = eval_c1(commit_ts)
+        if "W1" in enabled:
+            dims["W1"] = eval_w1(commit_ts, impl_entry_ts)
         if "C3" in enabled:
             dims["C3"] = eval_c3(spec_approver_id, authorized_ids, builder_ids)
         if "D1" in enabled:

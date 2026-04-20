@@ -33,6 +33,7 @@ _DIM_LABELS: dict[str, str] = {
     "D8": "Cycle time within norm",
     "D9": "Story defect rate",
     "D10": "No backward transitions",
+    "W1": "Spec workflow stages observed",
 }
 
 _DIM_ACTION: dict[str, str] = {
@@ -48,6 +49,7 @@ _DIM_ACTION: dict[str, str] = {
     "D6": "Populate the production release reference field at the same time as the Done Implementing transition.",
     "U7": "Post-commit AC edits signal scope evolution; escalate to the upstream owner before re-entering Implementation.",
     "U10": "Set the Impact Measurement Link at commitment, not post-launch.",
+    "W1": "Enable the Jira workflow validator that blocks In Implementation unless the issue previously reached Done Specifying. See rollout/jira-workflow-rules.md.",
 }
 
 
@@ -132,6 +134,24 @@ def format_rollup(report: RollupReport) -> str:
                 f"exceeded the {s.cycle_time_threshold_days}-day threshold."
             )
             lines.append("")
+
+    # Spec workflow bypasses
+    bypasses = s.spec_workflow_bypasses
+    if bypasses:
+        lines.append("## Spec Workflow Bypasses")
+        lines.append("")
+        n = len(bypasses)
+        lines.append(
+            f"{n} {'issue' if n == 1 else 'issues'} entered In Implementation without going "
+            f"through Done Specifying. These stories were never formally committed — "
+            f"they have no spec approval, no BDD record, and no valid commitment baseline. "
+            f"They should be investigated and either retrospectively specced or removed from "
+            f"delivery metrics."
+        )
+        lines.append("")
+        for key in bypasses:
+            lines.append(f"- {key}")
+        lines.append("")
 
     # Owner breakdown
     o = report.owner
