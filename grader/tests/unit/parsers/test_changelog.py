@@ -110,7 +110,7 @@ class TestParseChangelog:
                 "2026-03-15T10:00:00.000+0000",
                 actor_id="hector",
                 items=[
-                    _status_item("Done Specifying", "Ready"),
+                    _status_item("Done Specifying", "In Implementation"),
                     _field_item("Spec Approver", None, "hector-id"),
                 ],
             )
@@ -157,22 +157,22 @@ class TestParseChangelog:
 
 class TestCommitmentTimestamp:
     def _cl_with_full_flow(self) -> ParsedChangelog:
+        # Nolte workflow: no "Ready" status — commitment is Done Specifying → In Implementation
         histories = [
             _history("h1", "2026-03-10T08:00:00Z", items=[_status_item("Backlog", "In Specification")]),
             _history("h2", "2026-03-12T09:00:00Z", items=[_status_item("In Specification", "Done Specifying")]),
             _history(
                 "h3",
-                "2026-03-13T10:00:00Z",
+                "2026-03-15T10:00:00Z",
                 actor_id="hector",
                 items=[
-                    _status_item("Done Specifying", "Ready"),
+                    _status_item("Done Specifying", "In Implementation"),
                     _field_item("Spec Approver", None, "hector-id"),
                 ],
             ),
-            _history("h4", "2026-03-15T10:00:00Z", items=[_status_item("Ready", "In Implementation")]),
-            _history("h5", "2026-03-20T14:00:00Z", items=[_status_item("In Implementation", "Done Implementing")]),
-            _history("h6", "2026-03-21T09:00:00Z", items=[_status_item("Done Implementing", "In Validation")]),
-            _history("h7", "2026-03-22T16:00:00Z", actor_id="yanna", items=[_status_item("In Validation", "Done")]),
+            _history("h4", "2026-03-20T14:00:00Z", items=[_status_item("In Implementation", "Done Implementing")]),
+            _history("h5", "2026-03-21T09:00:00Z", items=[_status_item("Done Implementing", "In Validation")]),
+            _history("h6", "2026-03-22T16:00:00Z", actor_id="yanna", items=[_status_item("In Validation", "Done")]),
         ]
         return parse_changelog(histories)
 
@@ -188,9 +188,10 @@ class TestCommitmentTimestamp:
         assert cl.commitment_timestamp() is None
 
     def test_done_specifying_to_ready_timestamp(self) -> None:
+        # aliases commitment_timestamp() — returns Done Specifying → In Implementation time
         cl = self._cl_with_full_flow()
         ts = cl.done_specifying_to_ready_timestamp()
-        assert ts == datetime(2026, 3, 13, 10, 0, tzinfo=UTC)
+        assert ts == datetime(2026, 3, 15, 10, 0, tzinfo=UTC)
 
     def test_done_implementing_timestamp(self) -> None:
         cl = self._cl_with_full_flow()
@@ -266,10 +267,10 @@ class TestSpecApproverAtReadyTransition:
         histories = [
             _history(
                 "h3",
-                "2026-03-13T10:00:00Z",
+                "2026-03-15T10:00:00Z",
                 actor_id="hector",
                 items=[
-                    _status_item("Done Specifying", "Ready"),
+                    _status_item("Done Specifying", "In Implementation"),
                     _field_item("Spec Approver", None, "hector-account-id"),
                 ],
             ),
@@ -278,14 +279,14 @@ class TestSpecApproverAtReadyTransition:
         approver = cl.spec_approver_at_ready_transition("Spec Approver")
         assert approver == "hector-account-id"
 
-    def test_returns_none_when_no_done_specifying_to_ready(self) -> None:
-        histories = [_history("h1", "2026-03-15T10:00:00Z", items=[_status_item("Ready", "In Implementation")])]
+    def test_returns_none_when_no_done_specifying_to_impl(self) -> None:
+        histories = [_history("h1", "2026-03-15T10:00:00Z", items=[_status_item("Backlog", "In Specification")])]
         cl = parse_changelog(histories)
         assert cl.spec_approver_at_ready_transition("Spec Approver") is None
 
     def test_returns_none_when_approver_field_not_in_same_entry(self) -> None:
         histories = [
-            _history("h1", "2026-03-13T10:00:00Z", items=[_status_item("Done Specifying", "Ready")]),
+            _history("h1", "2026-03-13T10:00:00Z", items=[_status_item("Done Specifying", "In Implementation")]),
             _history("h2", "2026-03-13T11:00:00Z", items=[_field_item("Spec Approver", None, "hector-id")]),
         ]
         cl = parse_changelog(histories)
@@ -380,14 +381,14 @@ class TestBackwardTransitions:
         histories = [
             _history("h1", "2026-03-10T00:00:00Z", items=[_status_item("Backlog", "In Specification")]),
             _history("h2", "2026-03-12T00:00:00Z", items=[_status_item("In Specification", "Done Specifying")]),
-            _history("h3", "2026-03-15T00:00:00Z", items=[_status_item("Done Specifying", "Ready")]),
+            _history("h3", "2026-03-15T00:00:00Z", items=[_status_item("Done Specifying", "In Implementation")]),
         ]
         cl = parse_changelog(histories)
         assert cl.has_backward_transitions() is False
 
     def test_backward_transition_detected(self) -> None:
         histories = [
-            _history("h1", "2026-03-15T00:00:00Z", items=[_status_item("In Implementation", "Ready")]),
+            _history("h1", "2026-03-15T00:00:00Z", items=[_status_item("In Implementation", "Done Specifying")]),
         ]
         cl = parse_changelog(histories)
         assert cl.has_backward_transitions() is True
@@ -395,13 +396,13 @@ class TestBackwardTransitions:
     def test_backward_transitions_list(self) -> None:
         histories = [
             _history("h1", "2026-03-12T00:00:00Z", items=[_status_item("In Specification", "Done Specifying")]),
-            _history("h2", "2026-03-15T00:00:00Z", items=[_status_item("In Implementation", "Ready")]),
+            _history("h2", "2026-03-15T00:00:00Z", items=[_status_item("In Implementation", "Done Specifying")]),
         ]
         cl = parse_changelog(histories)
         bw = cl.backward_transitions()
         assert len(bw) == 1
         assert bw[0].from_status == "In Implementation"
-        assert bw[0].to_status == "Ready"
+        assert bw[0].to_status == "Done Specifying"
 
     def test_unknown_status_not_counted_as_backward(self) -> None:
         histories = [
@@ -410,7 +411,7 @@ class TestBackwardTransitions:
         cl = parse_changelog(histories)
         assert cl.has_backward_transitions() is False
 
-    def test_kanban_order_has_eight_stages(self) -> None:
-        assert len(KANBAN_ORDER) == 8
-        assert KANBAN_ORDER[3] == "Ready"
-        assert KANBAN_ORDER[4] == "In Implementation"
+    def test_kanban_order_has_correct_stages(self) -> None:
+        assert len(KANBAN_ORDER) == 9
+        assert KANBAN_ORDER[4] == "Done Specifying"
+        assert KANBAN_ORDER[5] == "In Implementation"

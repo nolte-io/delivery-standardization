@@ -27,12 +27,12 @@ def _r(
 
 
 def eval_c1(commit_ts: object) -> DimensionResult:
-    """C1 — Ready → In Implementation transition present in changelog."""
+    """C1 — Done Specifying → In Implementation transition present in changelog."""
     if commit_ts is not None:
         return _r("C1", Verdict.PASS, "COMMITMENT_TRANSITION_FOUND",
-                  "Ready → In Implementation transition found in changelog.")
+                  "Done Specifying → In Implementation transition found in changelog.")
     return _r("C1", Verdict.FAIL, "COMMITMENT_TRANSITION_MISSING",
-              "No Ready → In Implementation transition in changelog.")
+              "No Done Specifying → In Implementation transition in changelog.")
 
 
 # ---------------------------------------------------------------------------
@@ -58,7 +58,7 @@ def eval_c3(
     """
     if not spec_approver_id:
         return _r("C3", Verdict.FAIL, "APPROVER_FIELD_EMPTY",
-                  "Spec Approver field empty at Done Specifying → Ready transition.")
+                  "Spec Approver field empty at Done Specifying → In Implementation transition.")
     if spec_approver_id not in authorized_account_ids:
         return _r("C3", Verdict.FAIL, "APPROVER_NOT_AUTHORIZED",
                   "Spec Approver account not in authorized approvers list for this project.")

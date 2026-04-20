@@ -321,8 +321,7 @@ class TestEvalD10:
         cl = _cl(
             _transition("Backlog", "In Specification", ts(2026, 3, 10)),
             _transition("In Specification", "Done Specifying", ts(2026, 3, 12)),
-            _transition("Done Specifying", "Ready", ts(2026, 3, 13)),
-            _transition("Ready", "In Implementation", ts(2026, 3, 15)),
+            _transition("Done Specifying", "In Implementation", ts(2026, 3, 15)),
         )
         r = eval_d10(cl)
         assert r.verdict == Verdict.PASS
@@ -330,18 +329,18 @@ class TestEvalD10:
 
     def test_backward_transition_fails(self) -> None:
         cl = _cl(
-            _transition("In Implementation", "Ready", ts(2026, 3, 16)),
+            _transition("In Implementation", "Done Specifying", ts(2026, 3, 16)),
         )
         r = eval_d10(cl)
         assert r.verdict == Verdict.FAIL
         assert r.evidence_code == "BACKWARD_TRANSITION_DETECTED"
         assert "In Implementation" in r.rationale
-        assert "Ready" in r.rationale
+        assert "Done Specifying" in r.rationale
 
     def test_rationale_includes_count(self) -> None:
         cl = _cl(
-            _transition("In Implementation", "Ready", ts(2026, 3, 16)),
-            _transition("In Implementation", "Ready", ts(2026, 3, 18)),
+            _transition("In Implementation", "Done Specifying", ts(2026, 3, 16)),
+            _transition("In Implementation", "Done Specifying", ts(2026, 3, 18)),
         )
         r = eval_d10(cl)
         assert "2" in r.rationale

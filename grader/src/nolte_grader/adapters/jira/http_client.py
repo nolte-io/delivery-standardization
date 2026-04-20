@@ -169,7 +169,7 @@ class JiraHttpClient:
         start_at = 0
         while True:
             result: dict[str, Any] = self._get(
-                "/search",
+                "/search/jql",
                 params={
                     "jql": jql,
                     "fields": ",".join(fields),
@@ -195,6 +195,10 @@ class JiraHttpClient:
         """Return all accessible project descriptors."""
         result = self._get("/project")
         return result if isinstance(result, list) else []
+
+    def whoami(self) -> dict[str, Any]:
+        """Return the authenticated user's profile (GET /myself)."""
+        return self._get("/myself")
 
     # ------------------------------------------------------------------
     # Context manager

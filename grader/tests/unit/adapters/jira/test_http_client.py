@@ -146,7 +146,7 @@ class TestGetFullChangelog:
 class TestSearchIssues:
     @respx.mock
     def test_yields_all_issues_single_page(self) -> None:
-        respx.get(f"{BASE}/rest/api/3/search").mock(
+        respx.get(f"{BASE}/rest/api/3/search/jql").mock(
             return_value=httpx.Response(
                 200,
                 json={
@@ -182,14 +182,14 @@ class TestSearchIssues:
                 },
             )
 
-        respx.get(f"{BASE}/rest/api/3/search").mock(side_effect=side_effect)
+        respx.get(f"{BASE}/rest/api/3/search/jql").mock(side_effect=side_effect)
         with _client() as c:
             results = list(c.search_issues("project = TEST", ["summary"]))
         assert len(results) == 120
 
     @respx.mock
     def test_empty_result_set(self) -> None:
-        respx.get(f"{BASE}/rest/api/3/search").mock(
+        respx.get(f"{BASE}/rest/api/3/search/jql").mock(
             return_value=httpx.Response(
                 200,
                 json={"issues": [], "total": 0, "startAt": 0},

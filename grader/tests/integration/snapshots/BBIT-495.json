@@ -104,7 +104,7 @@
       "code": "C1",
       "verdict": "PASS",
       "evidence_code": "COMMITMENT_TRANSITION_FOUND",
-      "rationale": "Ready \u2192 In Implementation transition found in changelog.",
+      "rationale": "Done Specifying \u2192 In Implementation transition found in changelog.",
       "quotes": [],
       "recommended_type": null,
       "model": null,

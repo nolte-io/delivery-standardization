@@ -1,65 +1,143 @@
 {
   "key": "BBIT-501",
   "fields": {
-    "issuetype": {"name": "Story"},
-    "project": {"key": "BBIT", "name": "Bright Bits"},
+    "issuetype": {
+      "name": "Story"
+    },
+    "project": {
+      "key": "BBIT",
+      "name": "Bright Bits"
+    },
     "summary": "Enable two-factor authentication for admin users",
-    "status": {"name": "Done"},
-    "assignee": {"accountId": "dulce-id", "displayName": "Dulce Hernandez Cruz"},
-    "reporter": {"accountId": "yanna-id", "displayName": "Yanna Lopes"},
+    "status": {
+      "name": "Done"
+    },
+    "assignee": {
+      "accountId": "dulce-id",
+      "displayName": "Dulce Hernandez Cruz"
+    },
+    "reporter": {
+      "accountId": "yanna-id",
+      "displayName": "Yanna Lopes"
+    },
     "created": "2026-01-10T09:00:00.000+0000",
     "resolutiondate": "2026-01-29T16:00:00.000+0000",
-    "parent": {"key": "BBIT-200", "fields": {"issuetype": {"name": "Epic"}}},
+    "parent": {
+      "key": "BBIT-200",
+      "fields": {
+        "issuetype": {
+          "name": "Epic"
+        }
+      }
+    },
     "description": {
       "version": 1,
       "type": "doc",
       "content": [
         {
           "type": "heading",
-          "attrs": {"level": 2},
-          "content": [{"type": "text", "text": "Business Objective"}]
+          "attrs": {
+            "level": 2
+          },
+          "content": [
+            {
+              "type": "text",
+              "text": "Business Objective"
+            }
+          ]
         },
         {
           "type": "paragraph",
-          "content": [{"type": "text", "text": "Reduce unauthorized access by requiring 2FA for all admin accounts before end of Q1."}]
+          "content": [
+            {
+              "type": "text",
+              "text": "Reduce unauthorized access by requiring 2FA for all admin accounts before end of Q1."
+            }
+          ]
         },
         {
           "type": "heading",
-          "attrs": {"level": 2},
-          "content": [{"type": "text", "text": "Observable Impact"}]
+          "attrs": {
+            "level": 2
+          },
+          "content": [
+            {
+              "type": "text",
+              "text": "Observable Impact"
+            }
+          ]
         },
         {
           "type": "paragraph",
-          "content": [{"type": "text", "text": "Zero admin accounts without 2FA within 30 days of shipping. Measured in the Security Dashboard under Admin Accounts."}]
+          "content": [
+            {
+              "type": "text",
+              "text": "Zero admin accounts without 2FA within 30 days of shipping. Measured in the Security Dashboard under Admin Accounts."
+            }
+          ]
         },
         {
           "type": "heading",
-          "attrs": {"level": 2},
-          "content": [{"type": "text", "text": "Acceptance Criteria"}]
+          "attrs": {
+            "level": 2
+          },
+          "content": [
+            {
+              "type": "text",
+              "text": "Acceptance Criteria"
+            }
+          ]
         },
         {
           "type": "paragraph",
-          "content": [{"type": "text", "text": "- All admin users are prompted to enroll in 2FA on next login\n- Users cannot access admin panel without completing 2FA setup\n- Recovery codes are generated and shown once at enrollment\n- Admins can disable 2FA only with super-admin approval"}]
+          "content": [
+            {
+              "type": "text",
+              "text": "- All admin users are prompted to enroll in 2FA on next login\n- Users cannot access admin panel without completing 2FA setup\n- Recovery codes are generated and shown once at enrollment\n- Admins can disable 2FA only with super-admin approval"
+            }
+          ]
         },
         {
           "type": "heading",
-          "attrs": {"level": 2},
-          "content": [{"type": "text", "text": "Scenarios"}]
+          "attrs": {
+            "level": 2
+          },
+          "content": [
+            {
+              "type": "text",
+              "text": "Scenarios"
+            }
+          ]
         },
         {
           "type": "paragraph",
-          "content": [{"type": "text", "text": "Given an admin user without 2FA enrolled\nWhen they log in\nThen they are redirected to 2FA setup before accessing the admin panel\n\nGiven an admin user with 2FA enrolled\nWhen they log in\nThen they pass 2FA challenge and reach the admin panel normally"}]
+          "content": [
+            {
+              "type": "text",
+              "text": "Given an admin user without 2FA enrolled\nWhen they log in\nThen they are redirected to 2FA setup before accessing the admin panel\n\nGiven an admin user with 2FA enrolled\nWhen they log in\nThen they pass 2FA challenge and reach the admin panel normally"
+            }
+          ]
         }
       ]
     },
     "subtasks": [
-      {"key": "BBIT-502", "fields": {"summary": "Implement 2FA enforcement", "issuetype": {"name": "Sub-task"}}}
+      {
+        "key": "BBIT-502",
+        "fields": {
+          "summary": "Implement 2FA enforcement",
+          "issuetype": {
+            "name": "Sub-task"
+          }
+        }
+      }
     ],
     "issueLinks": [],
     "customfield_10100": null,
     "customfield_10101": null,
     "customfield_10102": null,
-    "comment": {"comments": []}
+    "comment": {
+      "comments": []
+    }
   },
   "renderedFields": {
     "description": "<h2>Business Objective</h2><p>Reduce unauthorized access.</p><h2>Observable Impact</h2><p>Zero admin accounts without 2FA.</p><h2>Acceptance Criteria</h2><p>- All admin users prompted</p><h2>Scenarios</h2><p>Given an admin user...</p>"
@@ -68,13 +146,26 @@
     "histories": [
       {
         "id": "h01",
-        "author": {"accountId": "yanna-id", "displayName": "Yanna Lopes"},
+        "author": {
+          "accountId": "yanna-id",
+          "displayName": "Yanna Lopes"
+        },
         "created": "2026-01-10T09:00:00.000+0000",
-        "items": [{"field": "status", "fieldtype": "jira", "fromString": "Backlog", "toString": "In Specification"}]
+        "items": [
+          {
+            "field": "status",
+            "fieldtype": "jira",
+            "fromString": "Backlog",
+            "toString": "In Specification"
+          }
+        ]
       },
       {
         "id": "h02",
-        "author": {"accountId": "yanna-id", "displayName": "Yanna Lopes"},
+        "author": {
+          "accountId": "yanna-id",
+          "displayName": "Yanna Lopes"
+        },
         "created": "2026-01-12T10:00:00.000+0000",
         "items": [
           {
@@ -87,27 +178,42 @@
       },
       {
         "id": "h03",
-        "author": {"accountId": "yanna-id", "displayName": "Yanna Lopes"},
+        "author": {
+          "accountId": "yanna-id",
+          "displayName": "Yanna Lopes"
+        },
         "created": "2026-01-14T14:00:00.000+0000",
-        "items": [{"field": "status", "fieldtype": "jira", "fromString": "In Specification", "toString": "Done Specifying"}]
-      },
-      {
-        "id": "h04",
-        "author": {"accountId": "hector-id", "displayName": "Hector Sanchez"},
-        "created": "2026-01-15T10:00:00.000+0000",
         "items": [
-          {"field": "status", "fieldtype": "jira", "fromString": "Done Specifying", "toString": "Ready"}
+          {
+            "field": "status",
+            "fieldtype": "jira",
+            "fromString": "In Specification",
+            "toString": "Done Specifying"
+          }
         ]
       },
       {
-        "id": "h05",
-        "author": {"accountId": "dulce-id", "displayName": "Dulce Hernandez Cruz"},
+        "id": "h04",
+        "author": {
+          "accountId": "hector-id",
+          "displayName": "Hector Sanchez"
+        },
         "created": "2026-01-16T09:00:00.000+0000",
-        "items": [{"field": "status", "fieldtype": "jira", "fromString": "Ready", "toString": "In Implementation"}]
+        "items": [
+          {
+            "field": "status",
+            "fieldtype": "jira",
+            "fromString": "Done Specifying",
+            "toString": "In Implementation"
+          }
+        ]
       },
       {
         "id": "h06",
-        "author": {"accountId": "dulce-id", "displayName": "Dulce Hernandez Cruz"},
+        "author": {
+          "accountId": "dulce-id",
+          "displayName": "Dulce Hernandez Cruz"
+        },
         "created": "2026-01-17T11:00:00.000+0000",
         "items": [
           {
@@ -120,50 +226,118 @@
       },
       {
         "id": "h07",
-        "author": {"accountId": "dulce-id", "displayName": "Dulce Hernandez Cruz"},
+        "author": {
+          "accountId": "dulce-id",
+          "displayName": "Dulce Hernandez Cruz"
+        },
         "created": "2026-01-25T14:00:00.000+0000",
-        "items": [{"field": "status", "fieldtype": "jira", "fromString": "In Implementation", "toString": "Done Implementing"}]
+        "items": [
+          {
+            "field": "status",
+            "fieldtype": "jira",
+            "fromString": "In Implementation",
+            "toString": "Done Implementing"
+          }
+        ]
       },
       {
         "id": "h08",
-        "author": {"accountId": "yanna-id", "displayName": "Yanna Lopes"},
+        "author": {
+          "accountId": "yanna-id",
+          "displayName": "Yanna Lopes"
+        },
         "created": "2026-01-26T09:00:00.000+0000",
-        "items": [{"field": "status", "fieldtype": "jira", "fromString": "Done Implementing", "toString": "In Validation"}]
+        "items": [
+          {
+            "field": "status",
+            "fieldtype": "jira",
+            "fromString": "Done Implementing",
+            "toString": "In Validation"
+          }
+        ]
       },
       {
         "id": "h09",
-        "author": {"accountId": "dulce-id", "displayName": "Dulce Hernandez Cruz"},
+        "author": {
+          "accountId": "dulce-id",
+          "displayName": "Dulce Hernandez Cruz"
+        },
         "created": "2026-01-27T10:00:00.000+0000",
-        "items": [{"field": "status", "fieldtype": "jira", "fromString": "In Validation", "toString": "In Implementation"}]
+        "items": [
+          {
+            "field": "status",
+            "fieldtype": "jira",
+            "fromString": "In Validation",
+            "toString": "In Implementation"
+          }
+        ]
       },
       {
         "id": "h10",
-        "author": {"accountId": "dulce-id", "displayName": "Dulce Hernandez Cruz"},
+        "author": {
+          "accountId": "dulce-id",
+          "displayName": "Dulce Hernandez Cruz"
+        },
         "created": "2026-01-27T15:00:00.000+0000",
-        "items": [{"field": "status", "fieldtype": "jira", "fromString": "In Implementation", "toString": "Done Implementing"}]
+        "items": [
+          {
+            "field": "status",
+            "fieldtype": "jira",
+            "fromString": "In Implementation",
+            "toString": "Done Implementing"
+          }
+        ]
       },
       {
         "id": "h11",
-        "author": {"accountId": "yanna-id", "displayName": "Yanna Lopes"},
+        "author": {
+          "accountId": "yanna-id",
+          "displayName": "Yanna Lopes"
+        },
         "created": "2026-01-28T09:00:00.000+0000",
-        "items": [{"field": "status", "fieldtype": "jira", "fromString": "Done Implementing", "toString": "In Validation"}]
+        "items": [
+          {
+            "field": "status",
+            "fieldtype": "jira",
+            "fromString": "Done Implementing",
+            "toString": "In Validation"
+          }
+        ]
       },
       {
         "id": "h12",
-        "author": {"accountId": "yanna-id", "displayName": "Yanna Lopes"},
+        "author": {
+          "accountId": "yanna-id",
+          "displayName": "Yanna Lopes"
+        },
         "created": "2026-01-29T16:00:00.000+0000",
-        "items": [{"field": "status", "fieldtype": "jira", "fromString": "In Validation", "toString": "Done"}]
+        "items": [
+          {
+            "field": "status",
+            "fieldtype": "jira",
+            "fromString": "In Validation",
+            "toString": "Done"
+          }
+        ]
       }
-    ]
+    ],
+    "total": 11
   },
   "_subtasks_full": [
     {
       "key": "BBIT-502",
       "fields": {
         "summary": "Implement 2FA enforcement",
-        "issuetype": {"name": "Sub-task"},
-        "status": {"name": "Done"},
-        "assignee": {"accountId": "dulce-id", "displayName": "Dulce Hernandez Cruz"},
+        "issuetype": {
+          "name": "Sub-task"
+        },
+        "status": {
+          "name": "Done"
+        },
+        "assignee": {
+          "accountId": "dulce-id",
+          "displayName": "Dulce Hernandez Cruz"
+        },
         "created": "2026-01-14T11:00:00.000+0000",
         "description": "Implementation complete. All 2FA flows working."
       },
@@ -171,9 +345,19 @@
         "histories": [
           {
             "id": "sh01",
-            "author": {"accountId": "dulce-id", "displayName": "Dulce Hernandez Cruz"},
+            "author": {
+              "accountId": "dulce-id",
+              "displayName": "Dulce Hernandez Cruz"
+            },
             "created": "2026-01-25T13:00:00.000+0000",
-            "items": [{"field": "status", "fieldtype": "jira", "fromString": "In Progress", "toString": "Done"}]
+            "items": [
+              {
+                "field": "status",
+                "fieldtype": "jira",
+                "fromString": "In Progress",
+                "toString": "Done"
+              }
+            ]
           }
         ]
       }

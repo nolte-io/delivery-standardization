@@ -26,11 +26,15 @@ log = get_logger(__name__)
 
 # Canonical kanban stage order — used by D10 backward-transition detection.
 # Statuses outside this list (e.g., "Cancelled") are ignored for ordering.
+# Nolte workflow: Backlog/In Backlog → Awaiting Specification → In Specification
+#   → Done Specifying → In Implementation → Done Implementing → In Validation → Done
+# Note: there is no "Ready" status in the Nolte Jira; commitment is Done Specifying → In Implementation.
 KANBAN_ORDER: list[str] = [
     "Backlog",
+    "In Backlog",
+    "Awaiting Specification",
     "In Specification",
     "Done Specifying",
-    "Ready",
     "In Implementation",
     "Done Implementing",
     "In Validation",
@@ -63,7 +67,7 @@ class StatusTransition:
     history_id: str
 
 
-@dataclass(frozen=True, order=True)
+@dataclass(frozen=True)
 class FieldEdit:
     """One field-value change extracted from a changelog history entry."""
 
@@ -73,6 +77,9 @@ class FieldEdit:
     to_value: str | None
     actor_account_id: str
     history_id: str
+
+    def _sort_key(self) -> tuple[datetime, str, str, str]:
+        return (self.timestamp, self.field_name, self.from_value or "", self.to_value or "")
 
 
 @dataclass
@@ -91,22 +98,23 @@ class ParsedChangelog:
     # ------------------------------------------------------------------
 
     def commitment_timestamp(self) -> datetime | None:
-        """Time of the first ``Ready → In Implementation`` transition.
+        """Time of the first ``Done Specifying → In Implementation`` transition.
 
-        Per spec §6, this is the commitment point.
-        Returns None if the Story never entered In Implementation.
+        Per spec §6, this is the commitment point. The Nolte workflow has no
+        "Ready" status — commitment fires on Done Specifying → In Implementation.
+        Returns None if the Story never entered In Implementation from Done Specifying.
         """
         for t in self.status_transitions:
-            if t.from_status == "Ready" and t.to_status == "In Implementation":
+            if t.from_status == "Done Specifying" and t.to_status == "In Implementation":
                 return t.timestamp
         return None
 
     def done_specifying_to_ready_timestamp(self) -> datetime | None:
-        """Time of ``Done Specifying → Ready`` — the spec-approval gate (C3)."""
-        for t in self.status_transitions:
-            if t.from_status == "Done Specifying" and t.to_status == "Ready":
-                return t.timestamp
-        return None
+        """Time of the commitment gate (Done Specifying → In Implementation).
+
+        Kept for API compatibility; aliases commitment_timestamp().
+        """
+        return self.commitment_timestamp()
 
     def done_implementing_timestamp(self) -> datetime | None:
         """Time of the first transition into ``Done Implementing``."""
@@ -170,14 +178,12 @@ class ParsedChangelog:
         ]
 
     def spec_approver_at_ready_transition(self, spec_approver_field_name: str) -> str | None:
-        """Return the Spec Approver field value set at the ``Done Specifying → Ready`` transition.
+        """Return the Spec Approver field value set at the commitment gate.
 
-        Looks for a field edit of ``spec_approver_field_name`` in the same
-        history entry as the status transition. Returns ``to_value`` (the new
-        approver account ID or display name, depending on what Jira logs).
-        Returns None if no such edit exists.
+        Looks in the same changelog entry as the Done Specifying → In Implementation
+        transition (the Nolte commitment gate). Returns ``to_value`` if found.
         """
-        gate = self.transitions_from_to("Done Specifying", "Ready")
+        gate = self.transitions_from_to("Done Specifying", "In Implementation")
         if not gate:
             return None
         history_id = gate[0].history_id
@@ -352,5 +358,5 @@ def parse_changelog(histories: list[dict[str, Any]]) -> ParsedChangelog:
                 )
 
     transitions.sort()
-    edits.sort()
+    edits.sort(key=lambda e: e._sort_key())
     return ParsedChangelog(status_transitions=transitions, field_edits=edits)
