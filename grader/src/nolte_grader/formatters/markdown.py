@@ -42,7 +42,7 @@ _DIM_ACTION: dict[str, str] = {
     "Y5": "Require the production release reference before the Done Implementing → In Validation move, not after.",
     "D8": "Scope and WIP violations are the usual cause; review D7 and U7 for the outlier stories.",
     "Y6": "Investigate the specific stories for scope expansion or dependency wait; do not raise the threshold without data.",
-    "C3": "Ensure spec approvers set the field at the Done Specifying → Ready gate, not retroactively.",
+    "C3": "Ensure spec approvers set the field at the Done Specifying → In Implementation gate, not retroactively.",
     "D1": "Sub-tasks must be created during In Implementation. Move task decomposition after the commitment gate.",
     "D5": "Add a 'Tests — [story key]' sub-task at commitment; close it with a CI run link before Done Implementing.",
     "D6": "Populate the production release reference field at the same time as the Done Implementing transition.",
@@ -118,7 +118,7 @@ def format_rollup(report: RollupReport) -> str:
 
     # Cycle time
     if s.cycle_time_p50 is not None:
-        lines.append("## Cycle Time (Ready → Done Implementing)")
+        lines.append("## Cycle Time (Done Specifying → Done Implementing)")
         lines.append("")
         lines.append("| Metric | Value |")
         lines.append("|--------|-------|")
