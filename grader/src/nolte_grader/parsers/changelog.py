@@ -88,41 +88,40 @@ class ParsedChangelog:
 
     All lists are sorted by timestamp ascending. Callers should treat
     this as a read-only view — evaluators query it, they don't mutate it.
+
+    The four workflow fields are populated from WorkflowConfig so status-name
+    strings are never hardcoded in the evaluator layer.
     """
 
     status_transitions: list[StatusTransition]
     field_edits: list[FieldEdit]
+    commit_from: str = "Done Specifying"
+    commit_to: str = "In Implementation"
+    done_implementing_status: str = "Done Implementing"
+    done_status: str = "Done"
 
     # ------------------------------------------------------------------
     # Commitment and gate timestamps
     # ------------------------------------------------------------------
 
     def commitment_timestamp(self) -> datetime | None:
-        """Time of the first ``Done Specifying → In Implementation`` transition.
-
-        Per spec §6, this is the commitment point. The Nolte workflow has no
-        "Ready" status — commitment fires on Done Specifying → In Implementation.
-        Returns None if the Story never entered In Implementation from Done Specifying.
-        """
+        """Time of the first configured commitment transition."""
         for t in self.status_transitions:
-            if t.from_status == "Done Specifying" and t.to_status == "In Implementation":
+            if t.from_status == self.commit_from and t.to_status == self.commit_to:
                 return t.timestamp
         return None
 
     def done_specifying_to_ready_timestamp(self) -> datetime | None:
-        """Time of the commitment gate (Done Specifying → In Implementation).
-
-        Kept for API compatibility; aliases commitment_timestamp().
-        """
+        """Alias for commitment_timestamp() — kept for API compatibility."""
         return self.commitment_timestamp()
 
     def done_implementing_timestamp(self) -> datetime | None:
-        """Time of the first transition into ``Done Implementing``."""
-        return self._first_entry_into("Done Implementing")
+        """Time of the first transition into the configured done-implementing status."""
+        return self._first_entry_into(self.done_implementing_status)
 
     def done_timestamp(self) -> datetime | None:
-        """Time of the first transition into ``Done``."""
-        return self._first_entry_into("Done")
+        """Time of the first transition into the configured done status."""
+        return self._first_entry_into(self.done_status)
 
     def _first_entry_into(self, status: str) -> datetime | None:
         for t in self.status_transitions:
@@ -180,10 +179,10 @@ class ParsedChangelog:
     def spec_approver_at_ready_transition(self, spec_approver_field_name: str) -> str | None:
         """Return the Spec Approver field value set at the commitment gate.
 
-        Looks in the same changelog entry as the Done Specifying → In Implementation
-        transition (the Nolte commitment gate). Returns ``to_value`` if found.
+        Looks in the same changelog entry as the configured commitment transition.
+        Returns ``to_value`` if found.
         """
-        gate = self.transitions_from_to("Done Specifying", "In Implementation")
+        gate = self.transitions_from_to(self.commit_from, self.commit_to)
         if not gate:
             return None
         history_id = gate[0].history_id
@@ -295,11 +294,21 @@ def _next_day(d: date) -> date:
     return d + timedelta(days=1)
 
 
-def parse_changelog(histories: list[dict[str, Any]]) -> ParsedChangelog:
+def parse_changelog(
+    histories: list[dict[str, Any]],
+    *,
+    commit_from: str = "Done Specifying",
+    commit_to: str = "In Implementation",
+    done_implementing_status: str = "Done Implementing",
+    done_status: str = "Done",
+) -> ParsedChangelog:
     """Parse raw Jira changelog histories into a ``ParsedChangelog``.
 
     ``histories`` is the list from ``issue["changelog"]["histories"]`` or
     the ``values`` list from the paginated ``/changelog`` endpoint.
+
+    The keyword-only workflow arguments are forwarded to ``ParsedChangelog``
+    so all status-name lookups use config values, not hardcoded strings.
 
     Raises ``ChangelogError`` on unrecoverable structural problems (missing
     required keys). Logs warnings for unexpected-but-tolerable shapes.
@@ -359,4 +368,11 @@ def parse_changelog(histories: list[dict[str, Any]]) -> ParsedChangelog:
 
     transitions.sort()
     edits.sort(key=lambda e: e._sort_key())
-    return ParsedChangelog(status_transitions=transitions, field_edits=edits)
+    return ParsedChangelog(
+        status_transitions=transitions,
+        field_edits=edits,
+        commit_from=commit_from,
+        commit_to=commit_to,
+        done_implementing_status=done_implementing_status,
+        done_status=done_status,
+    )

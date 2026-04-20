@@ -104,6 +104,19 @@ class OutputConfig(BaseModel):
     formats: list[str]
 
 
+class CommitmentTransition(BaseModel):
+    model_config = ConfigDict(extra="forbid", populate_by_name=True)
+    from_status: str = Field("Done Specifying", alias="from")
+    to_status: str = Field("In Implementation", alias="to")
+
+
+class WorkflowConfig(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    commitment_transition: CommitmentTransition = Field(default_factory=CommitmentTransition)
+    done_implementing_status: str = "Done Implementing"
+    done_status: str = "Done"
+
+
 class TeamConfig(BaseModel):
     model_config = ConfigDict(extra="forbid")
     size: int
@@ -147,6 +160,7 @@ class GraderConfig(BaseModel):
     judge: JudgeConfig
     output: OutputConfig
     teams: TeamsConfig
+    workflow: WorkflowConfig = Field(default_factory=WorkflowConfig)
     prompts_dir: str | None = None
 
 

@@ -189,9 +189,20 @@ class Grader:
         title: str = fields.get("summary", "")
         epic_key: str | None = (fields.get("parent") or {}).get("key") or None
 
+        # Workflow kwargs — forwarded to every parse_changelog call so status
+        # names come from config, not hardcoded strings.
+        wf = self._config.workflow
+        wf_kwargs = dict(
+            commit_from=wf.commitment_transition.from_status,
+            commit_to=wf.commitment_transition.to_status,
+            done_implementing_status=wf.done_implementing_status,
+            done_status=wf.done_status,
+        )
+
         # Parse changelog
         changelog = parse_changelog(
-            (issue.get("changelog") or {}).get("histories") or []
+            (issue.get("changelog") or {}).get("histories") or [],
+            **wf_kwargs,
         )
 
         # Normalize description
@@ -285,7 +296,7 @@ class Grader:
         ]
 
         # Open subtasks at Done Implementing (D4)
-        open_at_done_impl = _open_subtask_keys_at(subtasks, done_implementing_ts)
+        open_at_done_impl = _open_subtask_keys_at(subtasks, done_implementing_ts, wf_kwargs)
 
         # Test subtask (D5)
         test_pattern = self._config.conventions.test_subtask_title_pattern
@@ -295,7 +306,8 @@ class Grader:
         test_description: str | None = None
         if test_subtask is not None:
             st_cl = parse_changelog(
-                (test_subtask.get("changelog") or {}).get("histories") or []
+                (test_subtask.get("changelog") or {}).get("histories") or [],
+                **wf_kwargs,
             )
             test_closed = st_cl.done_timestamp() is not None
             test_description = adf_to_text(
@@ -480,6 +492,7 @@ def _parse_ts(value: str) -> datetime | None:
 def _open_subtask_keys_at(
     subtasks: list[dict[str, Any]],
     done_implementing_ts: datetime | None,
+    wf_kwargs: dict[str, str],
 ) -> list[str]:
     """Return keys of subtasks that were not Done at done_implementing_ts."""
     if done_implementing_ts is None:
@@ -487,7 +500,8 @@ def _open_subtask_keys_at(
     open_keys: list[str] = []
     for st in subtasks:
         st_cl = parse_changelog(
-            (st.get("changelog") or {}).get("histories") or []
+            (st.get("changelog") or {}).get("histories") or [],
+            **wf_kwargs,
         )
         done_at = st_cl.done_timestamp()
         if done_at is None or done_at > done_implementing_ts:
