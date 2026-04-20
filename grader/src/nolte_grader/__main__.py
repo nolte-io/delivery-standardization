@@ -74,6 +74,7 @@ from nolte_grader.core.config import GraderConfig  # noqa: E402
 from nolte_grader.core.errors import JiraFieldNotFoundError  # noqa: E402
 from nolte_grader.core.grader import Grader  # noqa: E402
 from nolte_grader.core.models import IssueGrade, RollupWindow  # noqa: E402
+from nolte_grader.formatters.excel import write_workbook  # noqa: E402
 from nolte_grader.formatters.markdown import format_rollup  # noqa: E402
 
 
@@ -171,7 +172,7 @@ def main() -> None:
         projects = [k for k in include if k not in exclude]
         proj_clause = ", ".join(projects)
         jql = (
-            f'project in ({proj_clause}) AND issuetype = Story AND status = Done '
+            f'project in ({proj_clause}) AND issuetype in (Story, Task, Bug) AND status = Done '
             f'AND resolutiondate >= "{from_date}" AND resolutiondate <= "{to_date}"'
         )
         print(f"[grader] JQL: {jql}", file=sys.stderr)
@@ -255,6 +256,9 @@ def main() -> None:
         md = format_rollup(report)
         md_path.write_text(md, encoding="utf-8")
 
+        xlsx_path = run_dir / "grades.xlsx"
+        write_workbook(report, grades, instance_url, xlsx_path)
+
         if errors:
             err_path = run_dir / "errors.json"
             err_path.write_text(json.dumps(errors, indent=2), encoding="utf-8")
@@ -271,6 +275,7 @@ def main() -> None:
         print(f"top_failing:       {top}", file=sys.stderr)
         print(f"run_dir:           {run_dir.resolve()}", file=sys.stderr)
         print(f"rollup_md:         {md_path.resolve()}", file=sys.stderr)
+        print(f"grades_xlsx:       {xlsx_path.resolve()}", file=sys.stderr)
 
         sys.stdout.write("\n" + "=" * 70 + "\n")
         sys.stdout.write(f"rollup.md — run {run_id}\n")
