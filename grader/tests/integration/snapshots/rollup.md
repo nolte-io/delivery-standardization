@@ -17,7 +17,7 @@
 
 7 dimensions pending judge layer (C2, D2, D3, U11, U9, Y1, Y2) — excluded from scoring in this run.
 
-## Cycle Time (Ready → Done Implementing)
+## Cycle Time (In Implementation → Done)
 
 | Metric | Value |
 |--------|-------|

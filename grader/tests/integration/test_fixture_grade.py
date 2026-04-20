@@ -158,8 +158,9 @@ class TestBBIT495Structure:
         assert grade_495.done_timestamp is not None
 
     def test_cycle_time_days_set(self, grade_495: IssueGrade) -> None:
+        # In Implementation (2026-03-15T10:00) → Done (2026-03-21T16:00) = 6.25 days
         assert grade_495.cycle_time_days is not None
-        assert grade_495.cycle_time_days == pytest.approx(5.17, abs=0.1)
+        assert grade_495.cycle_time_days == pytest.approx(6.25, abs=0.1)
 
     def test_spec_approver_set(self, grade_495: IssueGrade) -> None:
         assert grade_495.spec_approver == "hector-id"
@@ -233,9 +234,9 @@ class TestBBIT501Structure:
         assert grade_501.commitment_timestamp.year == 2026
 
     def test_cycle_time_days(self, grade_501: IssueGrade) -> None:
-        # Ready→Done Implementing: 2026-01-16 → 2026-01-25 = 9 days
+        # In Implementation (2026-01-16T09:00) → Done (2026-01-29T16:00) = 13.29 days
         assert grade_501.cycle_time_days is not None
-        assert grade_501.cycle_time_days == pytest.approx(9.21, abs=0.1)
+        assert grade_501.cycle_time_days == pytest.approx(13.29, abs=0.1)
 
     def test_spec_approver_absent(self, grade_501: IssueGrade) -> None:
         assert grade_501.spec_approver is None

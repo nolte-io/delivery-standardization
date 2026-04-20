@@ -118,7 +118,7 @@ def format_rollup(report: RollupReport) -> str:
 
     # Cycle time
     if s.cycle_time_p50 is not None:
-        lines.append("## Cycle Time (Done Specifying → Done Implementing)")
+        lines.append("## Cycle Time (In Implementation → Done)")
         lines.append("")
         lines.append("| Metric | Value |")
         lines.append("|--------|-------|")

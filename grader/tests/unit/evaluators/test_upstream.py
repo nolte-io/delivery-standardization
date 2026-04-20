@@ -185,7 +185,7 @@ class TestEvalY6:
         r = eval_y6(None, ts(2026, 3, 22))
         assert r.verdict == Verdict.NOT_APPLICABLE
 
-    def test_no_done_implementing_ts_returns_not_applicable(self) -> None:
+    def test_no_done_ts_returns_not_applicable(self) -> None:
         r = eval_y6(ts(2026, 3, 15), None)
         assert r.verdict == Verdict.NOT_APPLICABLE
 

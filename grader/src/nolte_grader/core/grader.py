@@ -205,11 +205,11 @@ class Grader:
         done_implementing_ts = changelog.done_implementing_timestamp()
         done_ts = changelog.done_timestamp()
 
-        # Cycle time
+        # Cycle time: commitment (entering In Implementation) → Done
         cycle_time_days: float | None = None
-        if commit_ts and done_implementing_ts:
+        if commit_ts and done_ts:
             cycle_time_days = round(
-                (done_implementing_ts - commit_ts).total_seconds() / 86400, 2
+                (done_ts - commit_ts).total_seconds() / 86400, 2
             )
 
         # Description at commitment (spec §7.2 U7, §7.3 C2):
@@ -332,7 +332,7 @@ class Grader:
         if "Y5" in enabled:
             dims["Y5"] = eval_y5(prod_ref, done_ts, ref_after_done)
         if "Y6" in enabled:
-            dims["Y6"] = eval_y6(commit_ts, done_implementing_ts, self._config.thresholds.cycle_time_days)
+            dims["Y6"] = eval_y6(commit_ts, done_ts, self._config.thresholds.cycle_time_days)
         if "U7" in enabled:
             dims["U7"] = eval_u7(post_commit_edits)
         if "U8" in enabled:
@@ -356,7 +356,7 @@ class Grader:
         if "D7" in enabled:
             dims["D7"] = eval_d7(per_eng_violations, sys_violations, has_wip_exception, commit_ts)
         if "D8" in enabled:
-            dims["D8"] = eval_d8(commit_ts, done_implementing_ts, self._config.thresholds.cycle_time_days)
+            dims["D8"] = eval_d8(commit_ts, done_ts, self._config.thresholds.cycle_time_days)
         if "D9" in enabled:
             dims["D9"] = eval_d9(defect_count, done_implementing_ts)
         if "D10" in enabled:

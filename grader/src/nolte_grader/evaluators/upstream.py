@@ -157,14 +157,14 @@ def eval_y5(
 
 def eval_y6(
     commit_ts: datetime | None,
-    done_implementing_ts: datetime | None,
+    done_ts: datetime | None,
     threshold_days: int = 7,
 ) -> DimensionResult:
-    """Y6 — Ready → Done Implementing elapsed time ≤ threshold."""
-    if commit_ts is None or done_implementing_ts is None:
+    """Y6 — In Implementation → Done elapsed time ≤ threshold."""
+    if commit_ts is None or done_ts is None:
         return _r("Y6", Verdict.NOT_APPLICABLE, "NOT_APPLICABLE",
-                  "No complete Ready → Done Implementing window; Y6 not applicable.")
-    elapsed = (done_implementing_ts - commit_ts).total_seconds() / 86400
+                  "No complete In Implementation → Done window; Y6 not applicable.")
+    elapsed = (done_ts - commit_ts).total_seconds() / 86400
     if elapsed <= threshold_days:
         return _r("Y6", Verdict.PASS, "CYCLE_TIME_WITHIN_LIMIT",
                   f"Cycle time {elapsed:.1f} days within {threshold_days}-day limit.")

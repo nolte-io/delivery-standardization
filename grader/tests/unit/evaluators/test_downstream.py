@@ -255,7 +255,7 @@ class TestEvalD8:
         assert r.verdict == Verdict.NOT_APPLICABLE
         assert r.code == "D8"
 
-    def test_no_done_implementing_ts_returns_not_applicable(self) -> None:
+    def test_no_done_ts_returns_not_applicable(self) -> None:
         r = eval_d8(ts(2026, 3, 15), None)
         assert r.verdict == Verdict.NOT_APPLICABLE
 

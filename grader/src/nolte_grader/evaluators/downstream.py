@@ -203,16 +203,13 @@ def eval_d7(
 
 def eval_d8(
     commit_ts: datetime | None,
-    done_implementing_ts: datetime | None,
+    done_ts: datetime | None,
     threshold_days: int = 7,
 ) -> DimensionResult:
-    """D8 — Ready → Done Implementing elapsed time within configured norm.
-
-    Mirrors Y6's computation but applies in the downstream lane (Hector's view).
-    """
-    if commit_ts is None or done_implementing_ts is None:
-        return _na("D8", "No complete Ready → Done Implementing window; D8 not applicable.")
-    elapsed = (done_implementing_ts - commit_ts).total_seconds() / 86400
+    """D8 — In Implementation → Done elapsed time within configured norm."""
+    if commit_ts is None or done_ts is None:
+        return _na("D8", "No complete In Implementation → Done window; D8 not applicable.")
+    elapsed = (done_ts - commit_ts).total_seconds() / 86400
     if elapsed <= threshold_days:
         return _r("D8", Verdict.PASS, "CYCLE_TIME_WITHIN_NORM",
                   f"Cycle time {elapsed:.1f} days within {threshold_days}-day norm.")

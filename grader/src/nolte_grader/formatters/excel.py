@@ -90,7 +90,7 @@ def _build_rollup_sheet(ws: Any, report: RollupReport) -> None:
     _kv(r, "Six-yes pass rate", f"{sys.six_yes_pass_rate:.0%}"); r += 1
     _kv(r, "Pending judge dimensions", sys.pending_judge_dimensions); r += 2
 
-    _header(r, "Cycle Time (Done Specifying → Done Implementing)"); r += 1
+    _header(r, "Cycle Time (In Implementation → Done)"); r += 1
     _kv(r, "p50 (days)", round(sys.cycle_time_p50, 2) if sys.cycle_time_p50 is not None else "—"); r += 1
     _kv(r, "p90 (days)", round(sys.cycle_time_p90, 2) if sys.cycle_time_p90 is not None else "—"); r += 1
     _kv(r, "max (days)", round(sys.cycle_time_max, 2) if sys.cycle_time_max is not None else "—"); r += 1
