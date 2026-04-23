@@ -27,8 +27,8 @@ Each question rules something in and rules something out. Two out of six is not 
 The grader evaluates every Story against these six and reports per-dimension pass/fail. The six-yes pass rate is the headline metric for the upstream lane.
 
 Retrospective mapping:
-- Y6 is checked by actual cycle time (`Ready` → `Done Implementing` ≤ 7 calendar days). The forward-looking prediction at commit is captured separately by the Spec Approver gate (C3 in the rubric).
-- Y5 is checked by the presence of a Production Release Reference at the Done transition.
+- Y6 is checked by actual cycle time (`READY` → `DONE_IMPLEMENTING` ≤ 7 calendar days). The forward-looking prediction at commit is captured separately by the Spec Approver gate (C3 in the rubric).
+- Y5 is checked by the presence of a Production Release Reference at the `DONE` transition.
 - Y1, Y2, Y3 require both a deterministic field/section check and a judgment pass on quality.
 - Y4 is checked by comparing validator identity against builder identity in Jira history.
 
