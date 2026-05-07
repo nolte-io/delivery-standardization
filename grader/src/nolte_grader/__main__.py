@@ -51,7 +51,7 @@ def _load_dotenv(path: Path) -> None:
         value = rest.strip()
         if len(value) >= 2 and value[0] == value[-1] and value[0] in ('"', "'"):
             value = value[1:-1]
-        if key not in os.environ:
+        if key not in os.environ or not os.environ[key]:
             os.environ[key] = value
 
 

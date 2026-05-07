@@ -126,6 +126,16 @@ class AnthropicJudgeClient:
                     messages=[{"role": "user", "content": user}],
                 )
                 content = response.content[0].text if response.content else ""
+                # Strip markdown code fences (model sometimes wraps JSON in ```json...```)
+                stripped = content.strip()
+                if stripped.startswith("```"):
+                    # Remove opening fence line (e.g. "```json" or "```")
+                    newline = stripped.find("\n")
+                    stripped = stripped[newline + 1:] if newline != -1 else stripped[3:]
+                    # Remove closing fence
+                    if stripped.rstrip().endswith("```"):
+                        stripped = stripped.rstrip()[:-3].rstrip()
+                    content = stripped
                 try:
                     return json.loads(content)
                 except json.JSONDecodeError:
