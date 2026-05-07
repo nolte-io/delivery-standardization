@@ -68,6 +68,7 @@ if _DOTENV.exists():
 import yaml  # noqa: E402
 
 from nolte_grader.adapters.jira import FieldDiscovery, JiraHttpClient  # noqa: E402
+from nolte_grader.adapters.judge import AnthropicJudgeClient  # noqa: E402
 from nolte_grader.adapters.secrets.env import EnvSecretsProvider  # noqa: E402
 from nolte_grader.core.aggregator import aggregate  # noqa: E402
 from nolte_grader.core.config import GraderConfig  # noqa: E402
@@ -183,10 +184,35 @@ def main() -> None:
             print("DRY-RUN PASSED")
             return
 
+        # --- judge client (optional — skipped if ANTHROPIC_API_KEY absent) ---
+        judge_client = None
+        try:
+            anthropic_key = secrets.anthropic_key()
+            # Resolve prompts dir: config override > project root > cwd/prompts
+            if config.prompts_dir:
+                prompts_dir = Path(config.prompts_dir)
+            else:
+                # Walk from package location to find the prompts/ sibling
+                pkg_dir = Path(__file__).parent
+                prompts_dir = pkg_dir
+                for _ in range(6):
+                    candidate = prompts_dir / "prompts"
+                    if candidate.is_dir():
+                        prompts_dir = candidate
+                        break
+                    prompts_dir = prompts_dir.parent
+                else:
+                    prompts_dir = Path.cwd() / "prompts"
+            judge_client = AnthropicJudgeClient(config.judge, anthropic_key, prompts_dir)
+            print(f"[grader] judge client ready (prompts: {prompts_dir})", file=sys.stderr)
+        except Exception as exc:
+            print(f"[grader] judge client unavailable — running deterministic only: {exc}",
+                  file=sys.stderr)
+
         # --- fetch and grade -----------------------------------------------
         run_id = uuid.uuid4().hex[:8]
         run_start = datetime.now(timezone.utc)
-        grader = Grader(config)
+        grader = Grader(config, jira_client=client, judge_client=judge_client)
         grades: list[IssueGrade] = []
         errors: list[dict[str, str]] = []
         issue_count = 0

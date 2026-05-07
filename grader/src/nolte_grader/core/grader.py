@@ -379,7 +379,27 @@ class Grader:
         if "D10" in enabled:
             dims["D10"] = eval_d10(changelog)
 
-        # Emit judge-only dimensions as NOT_APPLICABLE placeholders until commit 7.
+        # Judge dimensions — only when judge client is wired
+        if self._judge_client is not None:
+            dims.update(
+                _run_judge_dimensions(
+                    judge=self._judge_client,
+                    jira=self._jira_client,
+                    enabled=enabled,
+                    issue_key=issue_key,
+                    issue_type=issue_type,
+                    title=title,
+                    description=description,
+                    sections=sections,
+                    desc_at_commit=desc_at_commit,
+                    commit_ts=commit_ts,
+                    epic_key=epic_key,
+                    fields=fields,
+                    subtasks=subtasks,
+                )
+            )
+
+        # Fallback placeholder for any judge dimension still missing
         for _code in sorted(_JUDGE_ONLY_DIMS):
             if _code in enabled and _code not in dims:
                 dims[_code] = DimensionResult(
@@ -422,6 +442,179 @@ class Grader:
             flags=flags,
             config_hash=config_hash(self._config),
         )
+
+
+# ---------------------------------------------------------------------------
+# Judge input preparation
+# ---------------------------------------------------------------------------
+
+
+def _run_judge_dimensions(
+    *,
+    judge: Any,
+    jira: Any,
+    enabled: set[str],
+    issue_key: str,
+    issue_type: str,
+    title: str,
+    description: str | None,
+    sections: dict[str, Any],
+    desc_at_commit: str | None,
+    commit_ts: Any,
+    epic_key: str | None,
+    fields: dict[str, Any],
+    subtasks: list[dict[str, Any]],
+) -> dict[str, DimensionResult]:
+    """Build judge inputs per dimension and call the judge client.
+
+    Returns a dict of dimension_code → DimensionResult for every judge
+    dimension that is enabled and can be evaluated. Dimensions requiring
+    data that is unavailable (no Jira client, no epic link, etc.) are
+    skipped — the placeholder loop in _grade() fills them with NOT_APPLICABLE.
+    """
+    results: dict[str, DimensionResult] = {}
+
+    # --- Y1 — Business objective nameable ----------------------------------
+    if "Y1" in enabled:
+        epic_bo: str | None = None
+        if epic_key and jira is not None:
+            try:
+                epic_issue = jira.get_issue(epic_key)
+                epic_desc_raw = (epic_issue.get("fields") or {}).get("description")
+                epic_text = adf_to_text(epic_desc_raw)
+                epic_sections = extract_sections(epic_text)
+                epic_bo = epic_sections.get("business_objective")
+            except Exception:
+                epic_bo = None
+        if epic_key is not None:  # attempt judge even if section is missing
+            results["Y1"] = judge.judge(issue_key, "Y1", {
+                "story_key": issue_key,
+                "epic_key": epic_key,
+                "epic_business_objective_text": epic_bo or "",
+            })
+
+    # --- Y2 — Observable business difference describable -------------------
+    if "Y2" in enabled:
+        results["Y2"] = judge.judge(issue_key, "Y2", {
+            "story_key": issue_key,
+            "observable_impact_text": sections.get("observable_impact") or "",
+        })
+
+    # --- C2 — BDD quality at commitment ------------------------------------
+    if "C2" in enabled and commit_ts is not None:
+        commit_sections = extract_sections(desc_at_commit)
+        results["C2"] = judge.judge(issue_key, "C2", {
+            "story_key": issue_key,
+            "acceptance_criteria_at_commit": commit_sections.get("acceptance_criteria") or "",
+            "scenarios_at_commit": commit_sections.get("scenarios") or "",
+        })
+
+    # --- U9 — Story defect classification ----------------------------------
+    if "U9" in enabled:
+        defect_links = [
+            lnk for lnk in (fields.get("issueLinks") or [])
+            if _is_story_defect_link(lnk)
+        ]
+        if defect_links and jira is not None:
+            # Run U9 per defect; aggregate — any FAIL trumps, all IE → IE
+            parent_scenarios = sections.get("scenarios") or ""
+            u9_results: list[DimensionResult] = []
+            for lnk in defect_links:
+                for direction in ("inwardIssue", "outwardIssue"):
+                    defect_ref = lnk.get(direction)
+                    if defect_ref is None:
+                        continue
+                    defect_key = defect_ref.get("key", "")
+                    if not defect_key:
+                        continue
+                    try:
+                        defect_issue = jira.get_issue(defect_key)
+                        defect_desc = adf_to_text(
+                            (defect_issue.get("fields") or {}).get("description")
+                        ) or ""
+                    except Exception:
+                        defect_desc = ""
+                    u9_results.append(judge.judge(defect_key, "U9", {
+                        "story_defect_key": defect_key,
+                        "story_defect_description": defect_desc,
+                        "parent_story_key": issue_key,
+                        "parent_story_scenarios_text": parent_scenarios,
+                    }))
+            if u9_results:
+                # Aggregate: first non-IE verdict wins; otherwise keep the IE
+                agg = u9_results[0]
+                for r in u9_results[1:]:
+                    if agg.verdict == Verdict.INSUFFICIENT_EVIDENCE:
+                        agg = r
+                results["U9"] = DimensionResult(
+                    code="U9",
+                    verdict=agg.verdict,
+                    evidence_code=agg.evidence_code,
+                    rationale=agg.rationale,
+                    quotes=agg.quotes,
+                    model=agg.model,
+                    prompt_version=agg.prompt_version,
+                    cached=agg.cached,
+                )
+
+    # --- U11 — Issue-type classification ------------------------------------
+    if "U11" in enabled:
+        results["U11"] = judge.judge(issue_key, "U11", {
+            "issue_key": issue_key,
+            "declared_type": issue_type,
+            "issue_title": title,
+            "issue_description": description or "",
+            "acceptance_criteria_if_any": sections.get("acceptance_criteria") or "",
+        })
+
+    # --- D2 — Design artifact necessity and presence -----------------------
+    if "D2" in enabled:
+        # design_artifact_link field ID is in fields by its resolved custom field ID;
+        # the field name key in config may be unresolved — check common field names too.
+        design_val = None
+        for candidate in ("Design Artifact Link", "design_artifact_link"):
+            design_val = fields.get(candidate)
+            if design_val:
+                break
+        results["D2"] = judge.judge(issue_key, "D2", {
+            "story_key": issue_key,
+            "story_title": title,
+            "story_description": description or "",
+            "acceptance_criteria": sections.get("acceptance_criteria") or "",
+            "scenarios": sections.get("scenarios") or "",
+            "design_artifact_present": "yes" if design_val else "no",
+        })
+
+    # --- D3 — Violations surfaced, not absorbed ----------------------------
+    if "D3" in enabled:
+        # Collect all comments
+        raw_comments = (fields.get("comment") or {}).get("comments") or []
+        comment_parts: list[str] = []
+        for c in raw_comments:
+            author = (c.get("author") or {}).get("displayName", "?")
+            body = adf_to_text(c.get("body")) or ""
+            if body.strip():
+                comment_parts.append(f"[{author}]: {body.strip()}")
+        comments_text = "\n\n".join(comment_parts) if comment_parts else "(no comments)"
+
+        # Subtask summaries and descriptions
+        st_parts: list[str] = []
+        for st in subtasks:
+            st_fields = st.get("fields") or {}
+            st_key = st.get("key", "?")
+            st_title = st_fields.get("summary", "")
+            st_desc = adf_to_text(st_fields.get("description")) or ""
+            st_parts.append(f"[{st_key}] {st_title}\n{st_desc}".strip())
+        subtasks_text = "\n\n".join(st_parts) if st_parts else "(no subtasks)"
+
+        results["D3"] = judge.judge(issue_key, "D3", {
+            "story_key": issue_key,
+            "scenarios": sections.get("scenarios") or "",
+            "comments_concatenated": comments_text,
+            "subtasks_text": subtasks_text,
+        })
+
+    return results
 
 
 # ---------------------------------------------------------------------------

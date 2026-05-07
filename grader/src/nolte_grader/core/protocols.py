@@ -54,10 +54,20 @@ class JiraClientProtocol(Protocol):
 
 @runtime_checkable
 class JudgeClientProtocol(Protocol):
-    """Contract the grader expects from any LLM judge.
+    """Contract the grader expects from any LLM judge."""
 
-    Concrete surface is wired in commit 8 (adapters/judge/).
-    """
+    def judge(
+        self,
+        issue_key: str,
+        dimension_code: str,
+        inputs: "dict[str, str | None]",
+    ) -> "Any":
+        """Evaluate ``dimension_code`` for ``issue_key`` with rendered inputs.
+
+        Returns a ``DimensionResult``-shaped object with at minimum:
+        code, verdict, evidence_code, rationale.
+        """
+        ...
 
 
 @runtime_checkable
