@@ -126,26 +126,22 @@ class AnthropicJudgeClient:
                     messages=[{"role": "user", "content": user}],
                 )
                 content = response.content[0].text if response.content else ""
-                # Strip markdown code fences (model sometimes wraps JSON in ```json...```)
-                stripped = content.strip()
-                if stripped.startswith("```"):
-                    # Remove opening fence line (e.g. "```json" or "```")
-                    newline = stripped.find("\n")
-                    stripped = stripped[newline + 1:] if newline != -1 else stripped[3:]
-                    # Remove closing fence
-                    if stripped.rstrip().endswith("```"):
-                        stripped = stripped.rstrip()[:-3].rstrip()
-                    content = stripped
+                content = _clean_json_response(content)
                 try:
                     return json.loads(content)
                 except json.JSONDecodeError:
-                    log.warning(
-                        "judge returned non-JSON",
-                        issue_key=issue_key,
-                        dim=dimension_code,
-                        preview=content[:200],
-                    )
-                    return None
+                    # Second attempt: repair literal newlines inside string values
+                    repaired = _repair_json_strings(content)
+                    try:
+                        return json.loads(repaired)
+                    except json.JSONDecodeError:
+                        log.warning(
+                            "judge returned non-JSON",
+                            issue_key=issue_key,
+                            dim=dimension_code,
+                            preview=content[:300],
+                        )
+                        return None
 
             except anthropic.RateLimitError:
                 wait = _BASE_BACKOFF_S * (2 ** (attempt - 1))
@@ -193,6 +189,56 @@ class AnthropicJudgeClient:
             attempts=_MAX_RETRIES,
         )
         return None
+
+
+# ------------------------------------------------------------------
+# JSON cleaning helpers
+# ------------------------------------------------------------------
+
+
+def _clean_json_response(text: str) -> str:
+    """Strip markdown code fences that models sometimes add around JSON output."""
+    stripped = text.strip()
+    if stripped.startswith("```"):
+        # Remove opening fence line (e.g. "```json" or just "```")
+        newline = stripped.find("\n")
+        stripped = stripped[newline + 1:] if newline != -1 else stripped[3:]
+        # Remove closing fence
+        if stripped.rstrip().endswith("```"):
+            stripped = stripped.rstrip()[:-3].rstrip()
+    return stripped.strip()
+
+
+def _repair_json_strings(text: str) -> str:
+    """Replace literal newlines/carriage-returns inside JSON string values with \\n / \\r.
+
+    Models occasionally emit multi-line string values without escaping the
+    embedded newlines, producing invalid JSON that json.loads() rejects.
+    This walks the text character-by-character, tracking whether we are
+    inside a string, and escapes any bare control characters it finds there.
+    """
+    result: list[str] = []
+    in_string = False
+    escape_next = False
+    for ch in text:
+        if escape_next:
+            result.append(ch)
+            escape_next = False
+        elif ch == "\\" and in_string:
+            result.append(ch)
+            escape_next = True
+        elif ch == '"':
+            in_string = not in_string
+            result.append(ch)
+        elif ch == "\n" and in_string:
+            result.append("\\n")
+        elif ch == "\r" and in_string:
+            result.append("\\r")
+        elif ch == "\t" and in_string:
+            result.append("\\t")
+        else:
+            result.append(ch)
+    return "".join(result)
 
 
 # ------------------------------------------------------------------
