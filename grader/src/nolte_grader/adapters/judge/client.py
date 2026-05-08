@@ -127,21 +127,16 @@ class AnthropicJudgeClient:
                 )
                 content = response.content[0].text if response.content else ""
                 content = _clean_json_response(content)
-                try:
-                    return json.loads(content)
-                except json.JSONDecodeError:
-                    # Second attempt: repair literal newlines inside string values
-                    repaired = _repair_json_strings(content)
-                    try:
-                        return json.loads(repaired)
-                    except json.JSONDecodeError:
-                        log.warning(
-                            "judge returned non-JSON",
-                            issue_key=issue_key,
-                            dim=dimension_code,
-                            preview=content[:300],
-                        )
-                        return None
+                result = _try_parse_json(content)
+                if result is not None:
+                    return result
+                log.warning(
+                    "judge returned non-JSON",
+                    issue_key=issue_key,
+                    dim=dimension_code,
+                    preview=content[:300],
+                )
+                return None
 
             except anthropic.RateLimitError:
                 wait = _BASE_BACKOFF_S * (2 ** (attempt - 1))
@@ -195,6 +190,8 @@ class AnthropicJudgeClient:
 # JSON cleaning helpers
 # ------------------------------------------------------------------
 
+_JSON_DECODER = json.JSONDecoder()
+
 
 def _clean_json_response(text: str) -> str:
     """Strip markdown code fences that models sometimes add around JSON output."""
@@ -210,12 +207,11 @@ def _clean_json_response(text: str) -> str:
 
 
 def _repair_json_strings(text: str) -> str:
-    """Replace literal newlines/carriage-returns inside JSON string values with \\n / \\r.
+    """Escape literal newlines/tabs inside JSON string values.
 
-    Models occasionally emit multi-line string values without escaping the
-    embedded newlines, producing invalid JSON that json.loads() rejects.
-    This walks the text character-by-character, tracking whether we are
-    inside a string, and escapes any bare control characters it finds there.
+    Models occasionally emit multi-line string values with bare newlines
+    instead of \\n, producing invalid JSON. Walk character-by-character,
+    tracking string context, and escape any bare control characters.
     """
     result: list[str] = []
     in_string = False
@@ -239,6 +235,42 @@ def _repair_json_strings(text: str) -> str:
         else:
             result.append(ch)
     return "".join(result)
+
+
+def _try_parse_json(content: str) -> "dict[str, Any] | None":
+    """Three-phase JSON parse that handles common model output quirks.
+
+    Phase 1 — bare json.loads: handles clean, well-formed JSON.
+    Phase 2 — repair + loads: fixes literal newlines inside string values.
+    Phase 3 — raw_decode: uses JSONDecoder.raw_decode() which parses ONE
+               JSON value from the start of the string and ignores trailing
+               text (e.g. a Note: ... paragraph the model appended after }).
+    Returns None only if all three phases fail.
+    """
+    # Phase 1: clean parse
+    try:
+        return json.loads(content)
+    except json.JSONDecodeError:
+        pass
+
+    # Phase 2: escape bare control chars inside strings, then parse
+    repaired = _repair_json_strings(content)
+    try:
+        return json.loads(repaired)
+    except json.JSONDecodeError:
+        pass
+
+    # Phase 3: raw_decode tolerates trailing text after the JSON object
+    for candidate in (content, repaired):
+        lstripped = candidate.lstrip()
+        try:
+            obj, _ = _JSON_DECODER.raw_decode(lstripped)
+            if isinstance(obj, dict):
+                return obj
+        except json.JSONDecodeError:
+            pass
+
+    return None
 
 
 # ------------------------------------------------------------------
